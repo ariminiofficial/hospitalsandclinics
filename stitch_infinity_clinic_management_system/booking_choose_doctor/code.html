@@ -1,0 +1,363 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Infinity Clinic - Choose Doctor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed-dim": "#b2c5ff",
+                      "on-tertiary": "#ffffff",
+                      "tertiary-container": "#5b49b5",
+                      "surface-bright": "#f9f9ff",
+                      "on-secondary-container": "#5d656f",
+                      "on-tertiary-container": "#d5ccff",
+                      "inverse-on-surface": "#edf0ff",
+                      "tertiary-fixed-dim": "#c9bfff",
+                      "surface": "#f9f9ff",
+                      "on-error": "#ffffff",
+                      "secondary-fixed-dim": "#bfc7d3",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-fixed": "#dae2ff",
+                      "on-primary-fixed": "#001848",
+                      "outline-variant": "#c3c6d6",
+                      "on-primary-fixed-variant": "#0040a2",
+                      "tertiary": "#432f9c",
+                      "surface-container-highest": "#d7e2ff",
+                      "inverse-surface": "#1d3052",
+                      "surface-variant": "#d7e2ff",
+                      "on-secondary": "#ffffff",
+                      "secondary": "#575f69",
+                      "on-primary-container": "#c4d2ff",
+                      "on-surface-variant": "#434654",
+                      "background": "#f9f9ff",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed": "#e5deff",
+                      "surface-container": "#e8edff",
+                      "error": "#ba1a1a",
+                      "surface-container-high": "#e0e8ff",
+                      "on-secondary-fixed": "#141c25",
+                      "on-surface": "#041b3c",
+                      "on-error-container": "#93000a",
+                      "surface-container-low": "#f1f3ff",
+                      "primary-container": "#0052cc",
+                      "on-tertiary-fixed": "#1a0063",
+                      "on-tertiary-fixed-variant": "#4633a0",
+                      "outline": "#737685",
+                      "on-secondary-fixed-variant": "#3f4851",
+                      "secondary-container": "#dbe3ef",
+                      "surface-dim": "#cadaff",
+                      "on-background": "#041b3c",
+                      "surface-tint": "#0c56d0",
+                      "inverse-primary": "#b2c5ff",
+                      "primary": "#003d9b",
+                      "on-primary": "#ffffff",
+                      "secondary-fixed": "#dbe3ef"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "base": "8px",
+                      "md": "16px",
+                      "sm": "8px",
+                      "gutter": "24px",
+                      "margin": "32px",
+                      "xxl": "48px",
+                      "xl": "32px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "headline-xl": [
+                              "Inter"
+                      ],
+                      "token-display": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-xl": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "token-display": [
+                              "64px",
+                              {
+                                      "lineHeight": "72px",
+                                      "letterSpacing": "-0.04em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen pb-20">
+<!-- Header / Nav -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-margin h-16 bg-surface border-b border-outline-variant shadow-sm lg:hidden">
+<div class="flex items-center gap-sm">
+<button class="text-primary p-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="text-headline-sm font-headline-sm font-bold text-primary">Choose Doctor</h1>
+</div>
+<div class="flex items-center gap-sm">
+<button class="text-primary p-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">filter_list</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-20 px-md md:px-margin max-w-3xl mx-auto space-y-lg">
+<!-- Search and Filter -->
+<div class="flex flex-col gap-sm">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary" style="font-variation-settings: 'FILL' 0;">search</span>
+<input class="w-full h-12 pl-10 pr-4 rounded-lg border border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-body-md font-body-md text-on-surface" placeholder="Search by name or specialty..." type="text">
+</div>
+<div class="flex gap-sm overflow-x-auto pb-2 scrollbar-hide">
+<button class="px-4 py-2 rounded-full bg-primary-container text-on-primary-container text-label-md font-label-md whitespace-nowrap active:scale-95 transition-transform">All Specialties</button>
+<button class="px-4 py-2 rounded-full border border-outline-variant text-secondary bg-surface text-label-md font-label-md whitespace-nowrap active:scale-95 transition-transform hover:bg-surface-container-low">General</button>
+<button class="px-4 py-2 rounded-full border border-outline-variant text-secondary bg-surface text-label-md font-label-md whitespace-nowrap active:scale-95 transition-transform hover:bg-surface-container-low">Pediatrics</button>
+<button class="px-4 py-2 rounded-full border border-outline-variant text-secondary bg-surface text-label-md font-label-md whitespace-nowrap active:scale-95 transition-transform hover:bg-surface-container-low">Cardiology</button>
+</div>
+</div>
+<!-- Doctor List -->
+<div class="space-y-md">
+<!-- Doctor Card 1 -->
+<div class="bg-surface rounded-xl border border-outline-variant p-md flex flex-col gap-md shadow-sm">
+<div class="flex gap-md items-start">
+<img class="w-20 h-20 rounded-lg object-cover bg-surface-container-low" data-alt="Professional headshot of an Indian male doctor in his 40s wearing a white lab coat over a light blue shirt. He has short neat dark hair, glasses, and a warm, approachable smile. The background is a blurred, bright modern clinical setting with soft natural light coming from a nearby window." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEMFy13ouymzn3SSciuk04cTYuBn3DSxz9s45r4GijM-NywigVmdgXJU-wCODq4Kd4OufyYprETfLvWc6wRkAoWl8C8YRjSxWD-UqajGqEQsv_YkcWysf63fTQyBTq6QL_PTCtSY2_nI5N6zr0Uz_Teq3dTaU4ChpMo7C1hzFFDibAn5MnP0mhV-GKZo-6Yt3woUxbZGm2I96GLCP8WQJsF0IA-NyHjLqIsMtxqMaiorszAfS7vj0cJQ">
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Dr. Rajesh Sharma</h3>
+<p class="text-body-sm font-body-sm text-secondary">General Physician</p>
+</div>
+<div class="flex items-center gap-xs bg-surface-container-low px-2 py-1 rounded">
+<span class="material-symbols-outlined text-primary text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-label-md font-label-md text-on-surface">4.9</span>
+</div>
+</div>
+<div class="mt-2 text-body-sm font-body-sm text-on-surface-variant flex gap-4">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px] text-secondary">work</span>
+                                15 Yrs Exp
+                            </div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px] text-secondary">payments</span>
+                                ₹500
+                            </div>
+</div>
+</div>
+</div>
+<div class="flex gap-sm">
+<div class="flex-1 text-center py-2 bg-surface-container-low rounded-lg text-body-sm font-body-sm text-on-surface">
+<span class="block text-label-md font-label-md text-secondary mb-xs">Next Available</span>
+                        Today, 4:30 PM
+                    </div>
+<button class="flex-[2] bg-primary-container text-on-primary-container rounded-lg font-label-md text-label-md active:scale-[0.98] transition-transform flex items-center justify-center">
+                        Select Doctor
+                    </button>
+</div>
+</div>
+<!-- Doctor Card 2 -->
+<div class="bg-surface rounded-xl border border-outline-variant p-md flex flex-col gap-md shadow-sm">
+<div class="flex gap-md items-start">
+<img class="w-20 h-20 rounded-lg object-cover bg-surface-container-low" data-alt="Professional headshot of an Indian female doctor in her 30s wearing a white lab coat with a stethoscope around her neck. She has dark hair tied back neatly and a friendly, reassuring expression. The lighting is bright and clean, typical of a modern pediatric clinic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtXNdPhblomXiAL1rXOmovOv8xiIRZQ3kT7Vxi9WOv8v_K0JT57fKPbp1cx1mbWNoybVj6pFvGoH8IBy9IJhiCKBDMGBFQ3-WUajV9kEN_G-WM0fZB154YdYYUrt1_vCehV7pB6M9M1liXP9g_gg_I_X6BvYn7ylEFy2WVqKPhMIT7dyITNceo74wqdQRKEpUG7WAySL6d1f5pqstPITQwTUuhNA69o-CkkvJNVBl6wD7WdHg3ShMIYg">
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Dr. Anjali Kapoor</h3>
+<p class="text-body-sm font-body-sm text-secondary">Pediatrician</p>
+</div>
+<div class="flex items-center gap-xs bg-surface-container-low px-2 py-1 rounded">
+<span class="material-symbols-outlined text-primary text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-label-md font-label-md text-on-surface">4.8</span>
+</div>
+</div>
+<div class="mt-2 text-body-sm font-body-sm text-on-surface-variant flex gap-4">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px] text-secondary">work</span>
+                                10 Yrs Exp
+                            </div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px] text-secondary">payments</span>
+                                ₹600
+                            </div>
+</div>
+</div>
+</div>
+<div class="flex gap-sm">
+<div class="flex-1 text-center py-2 bg-surface-container-low rounded-lg text-body-sm font-body-sm text-on-surface">
+<span class="block text-label-md font-label-md text-secondary mb-xs">Next Available</span>
+                        Tomorrow, 10:00 AM
+                    </div>
+<button class="flex-[2] bg-primary-container text-on-primary-container rounded-lg font-label-md text-label-md active:scale-[0.98] transition-transform flex items-center justify-center">
+                        Select Doctor
+                    </button>
+</div>
+</div>
+<!-- Doctor Card 3 -->
+<div class="bg-surface rounded-xl border border-outline-variant p-md flex flex-col gap-md shadow-sm">
+<div class="flex gap-md items-start">
+<div class="w-20 h-20 rounded-lg bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-outline-variant text-[40px]">person</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Dr. Vikram Singh</h3>
+<p class="text-body-sm font-body-sm text-secondary">Cardiologist</p>
+</div>
+<div class="flex items-center gap-xs bg-surface-container-low px-2 py-1 rounded">
+<span class="material-symbols-outlined text-primary text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-label-md font-label-md text-on-surface">4.7</span>
+</div>
+</div>
+<div class="mt-2 text-body-sm font-body-sm text-on-surface-variant flex gap-4">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px] text-secondary">work</span>
+                                20 Yrs Exp
+                            </div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px] text-secondary">payments</span>
+                                ₹1000
+                            </div>
+</div>
+</div>
+</div>
+<div class="flex gap-sm">
+<div class="flex-1 text-center py-2 bg-surface-container-low rounded-lg text-body-sm font-body-sm text-on-surface opacity-75">
+<span class="block text-label-md font-label-md text-secondary mb-xs">Next Available</span>
+                        Wed, 11:30 AM
+                    </div>
+<button class="flex-[2] bg-primary-container text-on-primary-container rounded-lg font-label-md text-label-md active:scale-[0.98] transition-transform flex items-center justify-center">
+                        Select Doctor
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar JSON Component -->
+<nav class="fixed bottom-0 left-0 w-full z-50 lg:hidden flex justify-around items-center px-4 py-2 bg-surface dark:bg-on-surface border-t border-outline-variant shadow-lg docked full-width rounded-t-full">
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim active:bg-surface-container-high active:scale-90 duration-150 p-2 rounded-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="text-label-md font-label-md-mobile mt-1">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed active:bg-surface-container-high active:scale-90 duration-150 p-2 rounded-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+<span class="text-label-md font-label-md-mobile mt-1">Book</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim active:bg-surface-container-high active:scale-90 duration-150 p-2 rounded-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">history</span>
+<span class="text-label-md font-label-md-mobile mt-1">My Visits</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim active:bg-surface-container-high active:scale-90 duration-150 p-2 rounded-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="text-label-md font-label-md-mobile mt-1">Profile</span>
+</button>
+</nav>
+<style>
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</body></html>

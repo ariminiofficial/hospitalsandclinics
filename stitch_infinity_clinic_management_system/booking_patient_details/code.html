@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Patient Details - Infinity Clinic</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#cadaff",
+                        "surface-container-high": "#e0e8ff",
+                        "outline-variant": "#c3c6d6",
+                        "on-secondary-fixed": "#141c25",
+                        "on-surface": "#041b3c",
+                        "secondary": "#575f69",
+                        "surface-bright": "#f9f9ff",
+                        "surface": "#f9f9ff",
+                        "tertiary": "#432f9c",
+                        "tertiary-container": "#5b49b5",
+                        "on-surface-variant": "#434654",
+                        "error-container": "#ffdad6",
+                        "outline": "#737685",
+                        "error": "#ba1a1a",
+                        "primary": "#003d9b",
+                        "on-primary-container": "#c4d2ff",
+                        "surface-container": "#e8edff",
+                        "on-tertiary-fixed-variant": "#4633a0",
+                        "on-secondary-container": "#5d656f",
+                        "primary-fixed": "#dae2ff",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#c9bfff",
+                        "secondary-fixed-dim": "#bfc7d3",
+                        "on-primary-fixed": "#001848",
+                        "primary-container": "#0052cc",
+                        "background": "#f9f9ff",
+                        "tertiary-fixed": "#e5deff",
+                        "on-background": "#041b3c",
+                        "on-tertiary-container": "#d5ccff",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f1f3ff",
+                        "secondary-fixed": "#dbe3ef",
+                        "inverse-on-surface": "#edf0ff",
+                        "on-error-container": "#93000a",
+                        "on-primary": "#ffffff",
+                        "surface-variant": "#d7e2ff",
+                        "secondary-container": "#dbe3ef",
+                        "inverse-primary": "#b2c5ff",
+                        "surface-tint": "#0c56d0",
+                        "on-secondary-fixed-variant": "#3f4851",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed": "#1a0063",
+                        "inverse-surface": "#1d3052",
+                        "on-primary-fixed-variant": "#0040a2",
+                        "primary-fixed-dim": "#b2c5ff",
+                        "surface-container-highest": "#d7e2ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "base": "8px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "margin": "32px",
+                        "sm": "8px",
+                        "xs": "4px",
+                        "xxl": "48px"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "token-display": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-xl": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "token-display": ["64px", { "lineHeight": "72px", "letterSpacing": "-0.04em", "fontWeight": "800" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-xl": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #F4F5F7; } /* Level 0 floor */
+        .form-input-focus { transition: border-color 0.2s ease-in-out; }
+        .form-input-focus:focus { outline: none; border-color: #0052CC; border-width: 2px; }
+        .btn-press:active { transform: scale(0.98); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-sans antialiased text-on-surface bg-[#F4F5F7] min-h-screen pb-[80px]">
+<!-- Header -->
+<header class="fixed top-0 left-0 right-0 h-16 bg-white flex items-center px-md shadow-sm z-40">
+<button aria-label="Go back" class="w-10 h-10 flex items-center justify-center text-on-surface hover:bg-surface-container-low rounded-full transition-colors mr-2 btn-press">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-sm text-headline-sm text-on-surface">Patient Details</h1>
+</header>
+<!-- Main Content -->
+<main class="pt-20 px-md pb-xl max-w-lg mx-auto w-full">
+<!-- Progress Indicator -->
+<div class="flex items-center mb-lg px-2">
+<div class="flex flex-col items-center flex-1">
+<div class="w-8 h-8 rounded-full bg-primary-container text-white flex items-center justify-center font-label-md text-label-md mb-sm">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</div>
+<span class="font-label-md text-[10px] text-primary">Time</span>
+</div>
+<div class="h-[2px] bg-primary flex-1 -mt-5"></div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-8 h-8 rounded-full bg-primary-container text-white flex items-center justify-center font-label-md text-label-md mb-sm">
+                    2
+                </div>
+<span class="font-label-md text-[10px] text-primary">Details</span>
+</div>
+<div class="h-[2px] bg-[#DFE1E6] flex-1 -mt-5"></div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-secondary flex items-center justify-center font-label-md text-label-md mb-sm">
+                    3
+                </div>
+<span class="font-label-md text-[10px] text-secondary">Pay</span>
+</div>
+</div>
+<div class="bg-white rounded-xl p-md border border-[#DFE1E6] shadow-sm">
+<h2 class="font-headline-sm text-headline-sm mb-lg text-on-surface border-b border-outline-variant pb-sm">Who is this visit for?</h2>
+<form class="space-y-lg">
+<!-- Name Field -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-sm" for="fullName">Full Name <span class="text-error">*</span></label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary">person</span>
+<input class="w-full pl-10 pr-3 py-3 border border-[#DFE1E6] rounded-lg font-body-md text-body-md text-on-surface placeholder-secondary focus:border-primary focus:ring-1 focus:ring-primary form-input-focus transition-all bg-surface-bright" id="fullName" name="fullName" placeholder="Enter patient's full name" required="" type="text"/>
+</div>
+</div>
+<!-- Mobile Field -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-sm" for="mobile">Mobile Number <span class="text-error">*</span></label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary">call</span>
+<input class="w-full pl-10 pr-3 py-3 border border-[#DFE1E6] rounded-lg font-body-md text-body-md text-on-surface placeholder-secondary focus:border-primary focus:ring-1 focus:ring-primary form-input-focus transition-all bg-surface-bright" id="mobile" name="mobile" placeholder="e.g. +1 234 567 8900" required="" type="tel"/>
+</div>
+</div>
+<!-- Age & Gender Row -->
+<div class="grid grid-cols-2 gap-md">
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-sm" for="age">Age <span class="text-error">*</span></label>
+<input class="w-full px-3 py-3 border border-[#DFE1E6] rounded-lg font-body-md text-body-md text-on-surface placeholder-secondary focus:border-primary focus:ring-1 focus:ring-primary form-input-focus transition-all bg-surface-bright" id="age" max="150" min="0" name="age" placeholder="Years" required="" type="number"/>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-sm">Gender <span class="text-error">*</span></label>
+<div class="flex bg-surface-container-high rounded-lg p-1">
+<label class="flex-1 text-center cursor-pointer">
+<input checked="" class="sr-only peer" name="gender" type="radio" value="male"/>
+<div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-primary font-body-sm text-body-sm text-secondary transition-all">
+                                    Male
+                                </div>
+</label>
+<label class="flex-1 text-center cursor-pointer">
+<input class="sr-only peer" name="gender" type="radio" value="female"/>
+<div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-primary font-body-sm text-body-sm text-secondary transition-all">
+                                    Female
+                                </div>
+</label>
+</div>
+</div>
+</div>
+<!-- Reason for Visit -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-sm" for="reason">Reason for Visit <span class="text-secondary font-normal">(Optional)</span></label>
+<textarea class="w-full p-3 border border-[#DFE1E6] rounded-lg font-body-md text-body-md text-on-surface placeholder-secondary focus:border-primary focus:ring-1 focus:ring-primary form-input-focus transition-all resize-none bg-surface-bright" id="reason" name="reason" placeholder="Briefly describe your symptoms or reason for appointment" rows="3"></textarea>
+</div>
+</form>
+</div>
+<!-- Footer Action -->
+<div class="mt-xl">
+<button class="w-full bg-[#0052CC] text-white py-4 rounded-lg font-headline-sm text-[16px] btn-press transition-transform shadow-sm flex items-center justify-center">
+                Proceed to Payment
+                <span class="material-symbols-outlined ml-2 text-[20px]">arrow_forward</span>
+</button>
+<p class="text-center mt-md font-body-sm text-body-sm text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px] mr-1">lock</span>
+                Your information is secure and encrypted
+            </p>
+</div>
+</main>
+<!-- BottomNavBar JSON Render -->
+<nav class="fixed bottom-0 left-0 w-full z-50 lg:hidden flex justify-around items-center px-4 py-2 bg-surface border-t border-outline-variant shadow-md">
+<!-- Home -->
+<a class="flex flex-col items-center justify-center text-secondary p-2 transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<!-- Book (Active based on context of booking flow) -->
+<a class="flex flex-col items-center justify-center text-primary p-2 transition-transform scale-90 duration-150 active:bg-surface-container-high rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+<span class="font-label-md text-label-md">Book</span>
+</a>
+<!-- My Visits -->
+<a class="flex flex-col items-center justify-center text-secondary p-2 transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">history</span>
+<span class="font-label-md text-label-md">My Visits</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-secondary p-2 transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple client-side validation logic for visual feedback
+        const inputs = document.querySelectorAll('input[required]');
+        inputs.forEach(input => {
+            input.addEventListener('blur', () => {
+                if (!input.value.trim()) {
+                    input.classList.add('border-error');
+                    input.classList.remove('border-[#DFE1E6]');
+                } else {
+                    input.classList.remove('border-error');
+                    input.classList.add('border-[#DFE1E6]');
+                }
+            });
+        });
+    </script>
+</body></html>

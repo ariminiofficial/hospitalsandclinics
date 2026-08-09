@@ -1,0 +1,186 @@
+<!DOCTYPE html><html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Infinity Clinic | Modern Healthcare</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed-dim": "#b2c5ff",
+                      "on-tertiary": "#ffffff",
+                      "tertiary-container": "#5b49b5",
+                      "surface-bright": "#f9f9ff",
+                      "on-secondary-container": "#5d656f",
+                      "on-tertiary-container": "#d5ccff",
+                      "inverse-on-surface": "#edf0ff",
+                      "tertiary-fixed-dim": "#c9bfff",
+                      "surface": "#f9f9ff",
+                      "on-error": "#ffffff",
+                      "secondary-fixed-dim": "#bfc7d3",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-fixed": "#dae2ff",
+                      "on-primary-fixed": "#001848",
+                      "outline-variant": "#c3c6d6",
+                      "on-primary-fixed-variant": "#0040a2",
+                      "tertiary": "#432f9c",
+                      "surface-container-highest": "#d7e2ff",
+                      "inverse-surface": "#1d3052",
+                      "surface-variant": "#d7e2ff",
+                      "on-secondary": "#ffffff",
+                      "secondary": "#575f69",
+                      "on-primary-container": "#c4d2ff",
+                      "on-surface-variant": "#434654",
+                      "background": "#f9f9ff",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed": "#e5deff",
+                      "surface-container": "#e8edff",
+                      "error": "#ba1a1a",
+                      "surface-container-high": "#e0e8ff",
+                      "on-secondary-fixed": "#141c25",
+                      "on-surface": "#041b3c",
+                      "on-error-container": "#93000a",
+                      "surface-container-low": "#f1f3ff",
+                      "primary-container": "#0052cc",
+                      "on-tertiary-fixed": "#1a0063",
+                      "on-tertiary-fixed-variant": "#4633a0",
+                      "outline": "#737685",
+                      "on-secondary-fixed-variant": "#3f4851",
+                      "secondary-container": "#dbe3ef",
+                      "surface-dim": "#cadaff",
+                      "on-background": "#041b3c",
+                      "surface-tint": "#0c56d0",
+                      "inverse-primary": "#b2c5ff",
+                      "primary": "#003d9b",
+                      "on-primary": "#ffffff",
+                      "secondary-fixed": "#dbe3ef"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "base": "8px",
+                      "md": "16px",
+                      "sm": "8px",
+                      "gutter": "24px",
+                      "margin": "32px",
+                      "xxl": "48px",
+                      "xl": "32px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "body-lg": ["Inter", "sans-serif"],
+                      "body-md": ["Inter", "sans-serif"],
+                      "body-sm": ["Inter", "sans-serif"],
+                      "label-md": ["Inter", "sans-serif"],
+                      "headline-xl": ["Inter", "sans-serif"],
+                      "token-display": ["Inter", "sans-serif"],
+                      "headline-lg": ["Inter", "sans-serif"],
+                      "headline-sm": ["Inter", "sans-serif"],
+                      "headline-md": ["Inter", "sans-serif"]
+              },
+              "fontSize": {
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "token-display": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f9f9ff; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .filled-icon { font-variation-settings: 'FILL' 1; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden pt-16 lg:pt-0">
+<!-- TopNavBar (Web) -->
+<header class="hidden md:flex fixed top-0 left-0 w-full z-50 justify-between items-center px-4 md:px-margin h-16 bg-surface border-b border-outline-variant flat no shadows transition-all duration-300" id="top-nav">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-3xl filled-icon">medical_services</span>
+<span class="text-headline-md font-headline-md font-extrabold text-primary">Infinity Clinic</span>
+</div>
+<nav class="hidden lg:flex items-center gap-gutter text-label-md font-label-md">
+<a class="text-primary font-bold border-b-2 border-primary py-4 hover:text-primary-container transition-colors scale-95 duration-100" href="#services">Find Doctor</a>
+<a class="text-secondary font-medium hover:text-primary-container transition-colors py-4" href="#services">Services</a>
+<a class="text-secondary font-medium hover:text-primary-container transition-colors py-4" href="#locations">Locations</a>
+<a class="text-secondary font-medium hover:text-primary-container transition-colors py-4" href="#about">About Us</a>
+</nav>
+<div class="flex items-center gap-md">
+<button class="hidden lg:block text-body-sm font-body-sm text-secondary hover:text-primary transition-colors">Login</button>
+<button class="bg-primary-container text-on-primary px-md py-sm rounded-lg text-label-md font-label-md hover:bg-on-primary-fixed-variant transition-colors active:scale-95 duration-100">Book Appointment</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-[1440px] mx-auto pb-24 lg:pb-0 lg:pt-16">
+<!-- Hero Section -->
+<section class="relative w-full min-h-[707px] flex flex-col justify-center items-start px-4 md:px-margin py-xxl overflow-hidden bg-surface-container-low rounded-b-[2rem] lg:rounded-b-[4rem] mb-xl">
+<div class="absolute inset-0 z-0 opacity-20">
+<div class="bg-cover bg-center w-full h-full" data-alt="A bright, modern medical clinic interior with large windows letting in natural sunlight. Soft white and light blue tones dominate the clean, minimalist space. Professional, trustworthy, and welcoming atmosphere. High quality, cinematic lighting." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCsHNMi9-K3VK6MCLz9kj63xCLxZTdoYWQqGNaW6ew7qtbvqGA2yh59-hUapMb3HcYbJYJr15to0uVLKAszhz-d6uZ_d_-wJHCkI5u8fwAY9Kj236H8GlHYBp57Ulbzza3nR8eG26iL6EUFvOspqHs1oD_4RgnF-2HN7TUx0VTFYorsxeUceRKogExaEF9b0BwdYkYIYHFXzXfkleDa9EbDKj8G9pE7fORi3wmBpEotBWPTe3nsRUcDEQ')"></div>
+<div class="absolute inset-0 bg-gradient-to-r from-surface-container-low via-surface-container-low/80 to-transparent"></div>
+</div>
+<div class="relative z-10 max-w-2xl flex flex-col gap-lg">
+<div class="inline-flex items-center gap-2 bg-primary-fixed-dim/20 text-on-primary-fixed-variant px-sm py-1 rounded-full text-label-md font-label-md w-fit">
+<span class="material-symbols-outlined text-sm">verified</span>
+                    Trusted Healthcare Partners
+                </div>
+<h1 class="text-headline-xl lg:text-token-display font-headline-xl lg:font-token-display text-on-surface">
+                    Advanced Care.<br>Compassionate Healing.
+                </h1>
+<p class="text-body-lg font-body-lg text-on-surface-variant max-w-lg">
+                    Experience world-class medical expertise in a modern, comforting environment. Your health is our infinite priority.
+                </p>
+<div class="flex flex-col sm:flex-row gap-md mt-sm">
+<button class="bg-primary-container text-on-primary px-lg py-md rounded-lg text-body-md font-bold hover:bg-on-primary-fixed-variant transition-transform active:scale-95 duration-100 shadow-md flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">calendar_month</span>
+                        Book Appointment
+                    </button>
+<button class="bg-transparent border border-outline text-on-surface px-lg py-md rounded-lg text-body-md font-bold hover:bg-surface-container transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">call</span>
+                        Contact Clinic
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 lg:hidden flex justify-around items-center px-4 py-2 bg-surface border-t border-outline-variant shadow-lg rounded-t-full pb-safe">
+<a class="flex flex-col items-center justify-center text-primary active:bg-surface-container-high rounded-full p-2 scale-90 duration-150 transition-all" href="#">
+<span class="material-symbols-outlined filled-icon text-[24px]">home</span>
+<span class="text-label-md font-label-md mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary active:bg-surface-container-high rounded-full p-2 transition-all" href="#">
+<span class="material-symbols-outlined text-[24px]">add_circle</span>
+<span class="text-label-md font-label-md mt-1">Book</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary active:bg-surface-container-high rounded-full p-2 transition-all" href="#">
+<span class="material-symbols-outlined text-[24px]">history</span>
+<span class="text-label-md font-label-md mt-1">My Visits</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary active:bg-surface-container-high rounded-full p-2 transition-all" href="#">
+<span class="material-symbols-outlined text-[24px]">person</span>
+<span class="text-label-md font-label-md mt-1">Profile</span>
+</a>
+</nav>
+</body></html>
