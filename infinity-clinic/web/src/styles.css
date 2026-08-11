@@ -564,8 +564,9 @@ body.menu-open { overflow: hidden; }
 .rx-table th { font-family: var(--mono); font-size: 11px; text-transform: uppercase; color: var(--ink-soft); }
 .consultation-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
 .search-input { width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 3px; margin-bottom: 16px; font-size: 16px; }
-.json-preview { font-size: 13px; background: var(--paper); padding: 16px; border-radius: 4px; overflow-x: auto; }
-.json-editor { width: 100%; font-family: var(--mono); font-size: 13px; padding: 16px; border: 1px solid var(--line); border-radius: 4px; min-height: 200px; }
+.cms-item-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+.cms-item-card { display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); }
+.cms-item-actions { display: flex; gap: 8px; margin-top: 2px; }
 .inline-form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .history-item { display: flex; gap: 16px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
 .patient-search-results { display: flex; flex-direction: column; gap: 8px; }

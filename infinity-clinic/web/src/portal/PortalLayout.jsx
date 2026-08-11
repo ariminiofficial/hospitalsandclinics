@@ -25,7 +25,6 @@ const NAV = {
     { to: '/portal/admin/doctors', label: 'Doctors' },
     { to: '/portal/admin/receptionists', label: 'Receptionists' },
     { to: '/portal/admin/appointments', label: 'Appointments' },
-    { to: '/portal/admin/cms', label: 'Website CMS' },
     { to: '/portal/admin/settings', label: 'Settings' },
     { to: '/portal/admin/permissions', label: 'Permissions' },
   ],

@@ -106,13 +106,120 @@ const CONTENT_FORMS = {
 };
 
 const JSON_SECTIONS = ['why_cards', 'visit_steps', 'faq', 'diagnostics'];
-const ABOUT_JSON_KEYS = ['story', 'values'];
+
+const ITEM_SCHEMAS = {
+  why_cards: {
+    itemLabel: 'reason',
+    fields: [
+      { key: 'num', label: 'Number', placeholder: '01' },
+      { key: 'title', label: 'Title' },
+      { key: 'body', label: 'Description', multiline: true },
+    ],
+    emptyItem: () => ({ num: '', title: '', body: '' }),
+  },
+  visit_steps: {
+    itemLabel: 'step',
+    fields: [
+      { key: 'step', label: 'Step number', placeholder: '1' },
+      { key: 'title', label: 'Title' },
+      { key: 'body', label: 'Description', multiline: true },
+    ],
+    emptyItem: () => ({ step: '', title: '', body: '' }),
+  },
+  faq: {
+    itemLabel: 'question',
+    fields: [
+      { key: 'q', label: 'Question' },
+      { key: 'a', label: 'Answer', multiline: true },
+    ],
+    emptyItem: () => ({ q: '', a: '' }),
+  },
+  diagnostics: {
+    itemLabel: 'test',
+    fields: [
+      { key: 'dept', label: 'Department', placeholder: 'Cardiology' },
+      { key: 'name', label: 'Test name' },
+      { key: 'desc', label: 'Description', multiline: true },
+    ],
+    emptyItem: () => ({ dept: '', name: '', desc: '' }),
+  },
+};
 
 const CONTENT_TABS = {
   pages: ['hero', 'about', 'doctors_page', 'services_page', 'contact_page', 'testimonials_page', 'book_page'],
   site: ['home', 'contact', 'cta', 'footer'],
   lists: ['why_cards', 'visit_steps', 'faq', 'diagnostics'],
 };
+
+function moveItem(list, index, dir) {
+  const next = list.slice();
+  const target = index + dir;
+  if (target < 0 || target >= next.length) return next;
+  [next[index], next[target]] = [next[target], next[index]];
+  return next;
+}
+
+function ReorderButtons({ index, count, onMove, onRemove }) {
+  return (
+    <div className="cms-item-actions">
+      <button type="button" className="btn btn-sm btn-outline" disabled={index === 0} onClick={() => onMove(-1)} aria-label="Move up">↑</button>
+      <button type="button" className="btn btn-sm btn-outline" disabled={index === count - 1} onClick={() => onMove(1)} aria-label="Move down">↓</button>
+      <button type="button" className="btn btn-sm btn-danger" onClick={onRemove}>Remove</button>
+    </div>
+  );
+}
+
+function StoryEditor({ paragraphs, onChange }) {
+  const list = paragraphs || [];
+  return (
+    <label>
+      Our story (paragraphs)
+      <div className="cms-item-list">
+        {list.map((para, i) => (
+          <div key={i} className="cms-item-card">
+            <textarea
+              rows={3}
+              value={para}
+              placeholder={`Paragraph ${i + 1}`}
+              onChange={(e) => onChange(list.map((p, j) => (j === i ? e.target.value : p)))}
+            />
+            <ReorderButtons
+              index={i}
+              count={list.length}
+              onMove={(dir) => onChange(moveItem(list, i, dir))}
+              onRemove={() => onChange(list.filter((_, j) => j !== i))}
+            />
+          </div>
+        ))}
+      </div>
+      <button type="button" className="btn btn-sm btn-outline" onClick={() => onChange([...list, ''])}>+ Add paragraph</button>
+    </label>
+  );
+}
+
+function ValuesEditor({ values, onChange }) {
+  const list = values || [];
+  return (
+    <label>
+      Our values
+      <div className="cms-item-list">
+        {list.map((v, i) => (
+          <div key={i} className="cms-item-card">
+            <label>Title<input value={v.title || ''} onChange={(e) => onChange(list.map((it, j) => (j === i ? { ...it, title: e.target.value } : it)))} /></label>
+            <label>Description<textarea rows={2} value={v.body || ''} onChange={(e) => onChange(list.map((it, j) => (j === i ? { ...it, body: e.target.value } : it)))} /></label>
+            <ReorderButtons
+              index={i}
+              count={list.length}
+              onMove={(dir) => onChange(moveItem(list, i, dir))}
+              onRemove={() => onChange(list.filter((_, j) => j !== i))}
+            />
+          </div>
+        ))}
+      </div>
+      <button type="button" className="btn btn-sm btn-outline" onClick={() => onChange([...list, { title: '', body: '' }])}>+ Add value</button>
+    </label>
+  );
+}
 
 function ContentEditor({ section, data, onChange }) {
   const fields = CONTENT_FORMS[section] || [];
@@ -130,41 +237,55 @@ function ContentEditor({ section, data, onChange }) {
             )}
           </label>
         ))}
-        {section === 'about' && ABOUT_JSON_KEYS.map((key) => (
-          <label key={key}>
-            {key} (JSON array)
-            <textarea
-              className="json-editor"
-              rows={6}
-              value={JSON.stringify(data[key] || [], null, 2)}
-              onChange={(e) => {
-                try {
-                  onChange({ ...data, [key]: JSON.parse(e.target.value) });
-                } catch { /* ignore while typing */ }
-              }}
-            />
-          </label>
-        ))}
+        {section === 'about' && (
+          <>
+            <StoryEditor paragraphs={data.story} onChange={(story) => onChange({ ...data, story })} />
+            <ValuesEditor values={data.values} onChange={(values) => onChange({ ...data, values })} />
+          </>
+        )}
       </div>
     </div>
   );
 }
 
 function JsonSectionEditor({ section, data, onChange }) {
+  const schema = ITEM_SCHEMAS[section];
+  const items = data?.items || [];
+
+  const updateItem = (index, patch) => {
+    onChange({ ...data, items: items.map((it, j) => (j === index ? { ...it, ...patch } : it)) });
+  };
+  const removeItem = (index) => {
+    onChange({ ...data, items: items.filter((_, j) => j !== index) });
+  };
+  const moveItemAt = (index, dir) => {
+    onChange({ ...data, items: moveItem(items, index, dir) });
+  };
+  const addItem = () => {
+    onChange({ ...data, items: [...items, schema.emptyItem()] });
+  };
+
   return (
     <div className="cms-section-card">
       <h3 className="section-title">{section.replace(/_/g, ' ')}</h3>
-      <p className="text-body-sm">Edit as JSON. Use <code>items</code> array.</p>
-      <textarea
-        className="json-editor"
-        rows={12}
-        value={JSON.stringify(data, null, 2)}
-        onChange={(e) => {
-          try {
-            onChange(JSON.parse(e.target.value));
-          } catch { /* ignore while typing */ }
-        }}
-      />
+      <div className="cms-item-list">
+        {items.map((item, i) => (
+          <div key={i} className="cms-item-card">
+            {schema.fields.map((f) => (
+              <label key={f.key}>
+                {f.label}
+                {f.multiline ? (
+                  <textarea rows={2} value={item[f.key] || ''} placeholder={f.placeholder} onChange={(e) => updateItem(i, { [f.key]: e.target.value })} />
+                ) : (
+                  <input value={item[f.key] || ''} placeholder={f.placeholder} onChange={(e) => updateItem(i, { [f.key]: e.target.value })} />
+                )}
+              </label>
+            ))}
+            <ReorderButtons index={i} count={items.length} onMove={(dir) => moveItemAt(i, dir)} onRemove={() => removeItem(i)} />
+          </div>
+        ))}
+      </div>
+      <button type="button" className="btn btn-sm btn-outline" onClick={addItem}>+ Add {schema.itemLabel}</button>
     </div>
   );
 }

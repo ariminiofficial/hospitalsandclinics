@@ -50,7 +50,6 @@ export default function AdminDashboard() {
       <div className="quick-links">
         <Link to="/portal/admin/doctors" className="quick-link-card">Manage Doctors</Link>
         <Link to="/portal/admin/appointments" className="quick-link-card">View Appointments</Link>
-        <Link to="/portal/admin/cms" className="quick-link-card">Edit Website</Link>
         <Link to="/portal/admin/permissions" className="quick-link-card">Role Permissions</Link>
         <Link to="/portal/admin/settings" className="quick-link-card">Clinic Settings</Link>
         <Link to="/portal/receptionist" className="quick-link-card">Reception Desk</Link>
