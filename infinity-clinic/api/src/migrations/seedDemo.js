@@ -505,39 +505,82 @@ export async function seedDemoData(pool) {
     });
   }
 
-  // ── PAST consultations (history) ──
-  const pastCases = [
-    { phone: '9100000001', doctor: maske, days: 3, time: '09:30', complaint: 'BP check', diagnosis: 'Hypertension controlled', rx: RX_ITEMS_CARDIO.slice(0, 1), pharmacy: 'dispensed' },
-    { phone: '9100000002', doctor: maske, days: 7, time: '10:00', complaint: 'Breathlessness', diagnosis: 'Mild LV dysfunction', rx: RX_ITEMS_CARDIO, pharmacy: 'dispensed' },
-    { phone: '9100000003', doctor: maske, days: 14, time: '09:15', complaint: 'Routine follow-up', diagnosis: 'Post-angioplasty stable', rx: RX_ITEMS_CARDIO.slice(0, 2), pharmacy: 'dispensed' },
-    { phone: '9100000011', doctor: moon, days: 5, time: '10:30', complaint: 'Ear pain', diagnosis: 'Otitis media', rx: RX_ITEMS_ENT, pharmacy: 'dispensed' },
-    { phone: '9100000012', doctor: kolhe, days: 10, time: '11:00', complaint: 'Knee pain', diagnosis: 'OA knee bilateral', rx: RX_ITEMS_ORTHO, pharmacy: 'dispensed' },
-    { phone: '9100000014', doctor: lodhi, days: 6, time: '17:30', complaint: 'Antenatal visit', diagnosis: 'G2P1L1 — 24 weeks', rx: RX_ITEMS_GYNAE, pharmacy: 'dispensed' },
-    { phone: '9100000005', doctor: khandait, days: 4, time: '19:00', complaint: 'Migraine', diagnosis: 'Migraine without aura', rx: RX_ITEMS_NEURO, pharmacy: 'dispensed' },
-  ];
+  // ── 15-day rolling history + upcoming bookings (one per doctor per day) ──
+  const doctorList = [maske, moon, kolhe, khandait, lodhi].filter(Boolean);
+  const caseBank = {
+    [maske?.id]: [
+      { complaint: 'Chest tightness on exertion', diagnosis: 'Stable angina — on medical management', rx: RX_ITEMS_CARDIO },
+      { complaint: 'Palpitations', diagnosis: 'Benign PVCs — reassured', rx: RX_ITEMS_CARDIO.slice(0, 2) },
+      { complaint: 'Hypertension follow-up', diagnosis: 'Essential hypertension — controlled', rx: RX_ITEMS_CARDIO.slice(0, 1) },
+      { complaint: 'Breathlessness on exertion', diagnosis: 'Mild LV dysfunction — stable', rx: RX_ITEMS_CARDIO },
+    ],
+    [moon?.id]: [
+      { complaint: 'Chronic sinusitis', diagnosis: 'Allergic rhinitis with sinusitis', rx: RX_ITEMS_ENT },
+      { complaint: 'Ear pain', diagnosis: 'Otitis media — resolving', rx: RX_ITEMS_ENT },
+      { complaint: 'Nasal blockage', diagnosis: 'Deviated septum — conservative', rx: RX_ITEMS_ENT.slice(0, 1) },
+    ],
+    [kolhe?.id]: [
+      { complaint: 'Knee pain', diagnosis: 'OA knee bilateral', rx: RX_ITEMS_ORTHO },
+      { complaint: 'Lower back pain', diagnosis: 'Lumbar spondylosis', rx: RX_ITEMS_ORTHO },
+      { complaint: 'Shoulder stiffness', diagnosis: 'Frozen shoulder — improving', rx: RX_ITEMS_ORTHO.slice(0, 1) },
+    ],
+    [khandait?.id]: [
+      { complaint: 'Migraine', diagnosis: 'Migraine without aura', rx: RX_ITEMS_NEURO },
+      { complaint: 'Recurrent headache', diagnosis: 'Tension-type headache', rx: RX_ITEMS_NEURO },
+    ],
+    [lodhi?.id]: [
+      { complaint: 'Antenatal visit', diagnosis: 'Routine antenatal check-up', rx: RX_ITEMS_GYNAE },
+      { complaint: 'Irregular periods', diagnosis: 'PCOS — on management', rx: RX_ITEMS_GYNAE.slice(0, 1) },
+    ],
+  };
+  const pastTimes = ['08:00', '08:15', '08:30', '08:45', '08:59'];
+  const futureTimes = ['15:00', '15:15', '15:30', '15:45', '16:00'];
+  const paymentMethods = ['cash', 'upi_offline', 'card_offline'];
 
-  for (const c of pastCases) {
-    if (!c.doctor) continue;
-    const date = daysAgo(c.days);
-    const apptId = await insertAppointment(pool, {
-      patientId: p(c.phone), doctorId: c.doctor.id, date, time: c.time, status: 'completed', bookedVia: 'walk_in',
-    });
-    await insertToken(pool, {
-      appointmentId: apptId, doctorId: c.doctor.id, visitDate: date,
-      tokenNumber: 1, status: 'completed', completedAt: new Date(date),
-    });
-    const consultId = await insertConsultation(pool, {
-      appointmentId: apptId, doctorId: c.doctor.id, patientId: p(c.phone),
-      complaint: c.complaint, diagnosis: c.diagnosis, notes: 'Past demo visit.',
-    });
-    await insertPrescription(pool, {
-      consultationId: consultId, doctorId: c.doctor.id, patientId: p(c.phone),
-      advice: 'Follow up as needed.', pharmacyStatus: c.pharmacy, items: c.rx, pharmacistId,
-    });
-    await insertPayment(pool, {
-      appointmentId: apptId, amount: c.doctor.consultation_fee,
-      method: ['cash', 'upi_offline', 'card_offline'][c.days % 3], status: 'completed', recordedBy: adminId,
-    });
+  let rollingCount = { past: 0, future: 0 };
+  for (let dayOffset = 1; dayOffset <= 15; dayOffset++) {
+    const pastDate = daysAgo(dayOffset);
+    const futureDate = daysAhead(dayOffset);
+
+    for (let di = 0; di < doctorList.length; di++) {
+      const doctor = doctorList[di];
+      const cases = caseBank[doctor.id];
+      const phone = DEMO_PATIENTS[(dayOffset + di) % DEMO_PATIENTS.length].phone;
+
+      // Past: completed visit with consultation, prescription, payment
+      const kase = cases[(dayOffset + di) % cases.length];
+      const pastApptId = await insertAppointment(pool, {
+        patientId: p(phone), doctorId: doctor.id, date: pastDate, time: pastTimes[di],
+        status: 'completed', bookedVia: 'walk_in',
+      });
+      await insertToken(pool, {
+        appointmentId: pastApptId, doctorId: doctor.id, visitDate: pastDate,
+        tokenNumber: 1, status: 'completed', completedAt: new Date(pastDate),
+      });
+      const pastConsultId = await insertConsultation(pool, {
+        appointmentId: pastApptId, doctorId: doctor.id, patientId: p(phone),
+        complaint: kase.complaint, diagnosis: kase.diagnosis, notes: 'Demo history visit.',
+      });
+      await insertPrescription(pool, {
+        consultationId: pastConsultId, doctorId: doctor.id, patientId: p(phone),
+        advice: 'Follow up as needed.', pharmacyStatus: 'dispensed', items: kase.rx, pharmacistId,
+      });
+      await insertPayment(pool, {
+        appointmentId: pastApptId, amount: doctor.consultation_fee,
+        method: paymentMethods[(dayOffset + di) % paymentMethods.length], status: 'completed', recordedBy: adminId,
+      });
+      await setTokenCounter(pool, doctor.id, pastDate, 1);
+      rollingCount.past++;
+
+      // Future: upcoming booking, not yet consulted
+      const futurePhone = DEMO_PATIENTS[(dayOffset + di + 1) % DEMO_PATIENTS.length].phone;
+      await insertAppointment(pool, {
+        patientId: p(futurePhone), doctorId: doctor.id, date: futureDate, time: futureTimes[di],
+        status: dayOffset % 5 === 0 ? 'pending' : 'confirmed',
+        bookedVia: ['website', 'phone', 'walk_in'][(dayOffset + di) % 3],
+      });
+      rollingCount.future++;
+    }
   }
 
   // ── Pending payment demo ──
@@ -572,6 +615,6 @@ export async function seedDemoData(pool) {
   console.log(`  • Today: every active appointment is also in the OPD queue (cancelled/no-show excluded)`);
   console.log(`  • Dr Maske tokens #1–#8; ENT / Ortho / Gynae / Neuro also have live queues`);
   console.log(`  • Pharmacy: 2 pending Rx (Priya + ENT patient), 1 dispensed`);
-  console.log(`  • ${pastCases.length} past consultations with history`);
   console.log(`  • Future bookings, payments (cash/UPI/card), medicine templates`);
+  console.log(`  • ${rollingCount.past} completed visits over the last 15 days, ${rollingCount.future} upcoming bookings over the next 15 days`);
 }
