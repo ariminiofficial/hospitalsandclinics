@@ -215,7 +215,7 @@ async function seed() {
   console.log(`Pharmacist:   ${PHARMACIST_EMAIL} / ${PHARMACIST_PASSWORD}`);
   console.log('────────────── Demo patients ───────');
   console.log('Phones: 9100000001 – 9100000015 (search in receptionist/doctor portal)');
-  console.log('Today OPD: Dr Maske has tokens #1–#6 covering every queue status');
+  console.log('Today OPD: all active appointments are in the live queue (Maske #1–#8 + other doctors)');
   await pool.end();
 }
 

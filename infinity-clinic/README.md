@@ -104,7 +104,10 @@ Web runs at `http://localhost:5173` (proxies `/api` and `/socket.io` to the API)
 
 ## Production (VPS)
 
-- Nginx serves the React build and proxies `/api` + `/socket.io` to Express
+- Website: https://clinic.arimini.in (Nginx serves the React build)
+- API: https://clinicapi.arimini.in (Nginx proxies `/api` + `/socket.io` to Express)
+- Set `CORS_ORIGIN=https://clinic.arimini.in` and `COOKIE_SECURE=true` on the API
+- Web build uses `VITE_API_URL=https://clinicapi.arimini.in` (see `web/.env.production`)
 - PgBouncer in transaction mode on port 6432 (set `DATABASE_URL` accordingly)
 - PM2 runs a single API instance
 - See `deploy/` for configs

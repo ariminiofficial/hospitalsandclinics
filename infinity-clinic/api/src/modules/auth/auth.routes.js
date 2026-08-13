@@ -14,7 +14,7 @@ function setRefreshCookie(res, token) {
   res.cookie(REFRESH_COOKIE, token, {
     httpOnly: true,
     secure: env.cookieSecure,
-    sameSite: 'lax',
+    sameSite: env.cookieSecure ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/api/auth',
   });
@@ -53,7 +53,11 @@ router.post('/logout', async (req, res, next) => {
     if (token) {
       await authService.logout(token);
     }
-    res.clearCookie(REFRESH_COOKIE, { path: '/api/auth' });
+    res.clearCookie(REFRESH_COOKIE, {
+      path: '/api/auth',
+      secure: env.cookieSecure,
+      sameSite: env.cookieSecure ? 'none' : 'lax',
+    });
     res.json({ success: true });
   } catch (err) {
     next(err);

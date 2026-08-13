@@ -14,15 +14,20 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
     api.onUnauthorized = logout;
-    api.post('/auth/refresh')
-      .then((data) => {
-        api.setAccessToken(data.accessToken);
-        return api.get('/auth/me');
+    api.refresh()
+      .then((ok) => (ok ? api.get('/auth/me') : null))
+      .then((me) => {
+        if (!cancelled) setUser(me);
       })
-      .then(setUser)
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
+      .catch(() => {
+        if (!cancelled) setUser(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
   }, [logout]);
 
   const login = async (email, password) => {

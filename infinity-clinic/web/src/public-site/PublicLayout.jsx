@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { WebsiteProvider, useWebsite } from './WebsiteContext.jsx';
 
@@ -6,6 +6,7 @@ function PublicLayoutInner() {
   const { clinic, footer } = useWebsite();
   const { pathname, hash } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const headerRef = useRef(null);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -33,7 +34,50 @@ function PublicLayoutInner() {
     return () => document.body.classList.remove('menu-open');
   }, [menuOpen]);
 
+  useLayoutEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+    const syncHeight = () => {
+      const bottom = Math.round(header.getBoundingClientRect().bottom);
+      document.documentElement.style.setProperty('--header-bottom', `${Math.max(0, bottom)}px`);
+    };
+    syncHeight();
+    const ro = new ResizeObserver(syncHeight);
+    ro.observe(header);
+    window.addEventListener('scroll', syncHeight, { passive: true });
+    window.addEventListener('resize', syncHeight);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('scroll', syncHeight);
+      window.removeEventListener('resize', syncHeight);
+    };
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') setMenuOpen(false); };
+    const onResize = () => { if (window.innerWidth > 1024) setMenuOpen(false); };
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
+
   const closeMenu = () => setMenuOpen(false);
+
+  const navLinks = (
+    <>
+      <Link to="/" onClick={closeMenu}>Home</Link>
+      <Link to="/about" onClick={closeMenu}>About</Link>
+      <Link to="/doctors" onClick={closeMenu}>Specialists</Link>
+      <Link to="/services" onClick={closeMenu}>Services</Link>
+      <Link to="/contact" onClick={closeMenu}>Visit Us</Link>
+      <Link to="/testimonials" onClick={closeMenu}>Stories</Link>
+      <Link to="/book" className="btn btn-primary" onClick={closeMenu}>Book Online</Link>
+      <Link to="/portal/login" className="nav-staff" onClick={closeMenu}>Staff</Link>
+    </>
+  );
 
   return (
     <div className="site">
@@ -43,7 +87,7 @@ function PublicLayoutInner() {
           <a className="phone" href={`tel:+91${clinic.phone}`}>Call &nbsp;{clinic.phoneDisplay}</a>
         </div>
       </div>
-      <header>
+      <header ref={headerRef}>
         <div className="nav wrap">
           <Link to="/" className="brand" onClick={closeMenu}>
             <div className="brand-mark">∞</div>
@@ -52,21 +96,13 @@ function PublicLayoutInner() {
               <div className="brand-sub">{clinic.tagline}</div>
             </div>
           </Link>
-          <nav className={`links ${menuOpen ? 'open' : ''}`}>
-            <Link to="/" onClick={closeMenu}>Home</Link>
-            <Link to="/about" onClick={closeMenu}>About</Link>
-            <Link to="/doctors" onClick={closeMenu}>Specialists</Link>
-            <Link to="/services" onClick={closeMenu}>Services</Link>
-            <Link to="/contact" onClick={closeMenu}>Visit Us</Link>
-            <Link to="/testimonials" onClick={closeMenu}>Stories</Link>
-            <Link to="/book" className="btn btn-primary" onClick={closeMenu}>Book Online</Link>
-            <Link to="/portal/login" className="nav-staff" onClick={closeMenu}>Staff</Link>
-          </nav>
+          <nav className="links links-bar">{navLinks}</nav>
           <button
             type="button"
             className={`menu-toggle ${menuOpen ? 'open' : ''}`}
-            aria-label="Toggle menu"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
+            aria-controls="site-nav"
             onClick={() => setMenuOpen((o) => !o)}
           >
             <span /><span /><span />
@@ -74,6 +110,9 @@ function PublicLayoutInner() {
         </div>
       </header>
       {menuOpen && <button type="button" className="nav-backdrop" aria-label="Close menu" onClick={closeMenu} />}
+      <nav id="site-nav" className={`links links-drawer ${menuOpen ? 'open' : ''}`}>
+        {navLinks}
+      </nav>
       <main><Outlet /></main>
       <footer>
         <div className="wrap">

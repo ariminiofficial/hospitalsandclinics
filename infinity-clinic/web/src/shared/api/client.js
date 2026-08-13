@@ -1,9 +1,12 @@
-const API_BASE = '/api';
+export const API_ORIGIN = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const API_BASE = `${API_ORIGIN}/api`;
+const AUTH_PATHS = new Set(['/auth/login', '/auth/refresh', '/auth/logout']);
 
 class ApiClient {
   constructor() {
     this.accessToken = null;
     this.onUnauthorized = null;
+    this._refreshing = null;
   }
 
   setAccessToken(token) {
@@ -22,7 +25,7 @@ class ApiClient {
       credentials: 'include',
     });
 
-    if (res.status === 401 && this.onUnauthorized) {
+    if (res.status === 401 && !AUTH_PATHS.has(path)) {
       const refreshed = await this.refresh();
       if (refreshed) {
         headers.Authorization = `Bearer ${this.accessToken}`;
@@ -30,6 +33,8 @@ class ApiClient {
         if (!retry.ok) throw await this.parseError(retry);
         return retry.status === 204 ? null : retry.json();
       }
+      this.accessToken = null;
+      this.onUnauthorized?.();
     }
 
     if (!res.ok) throw await this.parseError(res);
@@ -45,8 +50,25 @@ class ApiClient {
   }
 
   async refresh() {
+    if (this._refreshing) return this._refreshing;
+    this._refreshing = this._doRefresh().finally(() => {
+      this._refreshing = null;
+    });
+    return this._refreshing;
+  }
+
+  async _doRefresh() {
     try {
-      const data = await this.request('/auth/refresh', { method: 'POST' });
+      const res = await fetch(`${API_BASE}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) {
+        this.accessToken = null;
+        return false;
+      }
+      const data = await res.json();
       this.accessToken = data.accessToken;
       return true;
     } catch {

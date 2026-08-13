@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
-import { api } from '../api/client.js';
+import { api, API_ORIGIN } from '../api/client.js';
 
 export function usePharmacySocket(onUpdate) {
   const onUpdateRef = useRef(onUpdate);
@@ -15,7 +15,11 @@ export function usePharmacySocket(onUpdate) {
     fetchQueue();
 
     const token = api.accessToken;
-    const socket = io({ path: '/socket.io', auth: { token } });
+    const socket = io(API_ORIGIN || undefined, {
+      path: '/socket.io',
+      auth: { token },
+      withCredentials: true,
+    });
 
     socket.on('pharmacy:update', () => fetchQueue());
     socket.on('connect', () => fetchQueue());

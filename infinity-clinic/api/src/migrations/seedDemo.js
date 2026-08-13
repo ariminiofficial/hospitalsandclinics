@@ -64,7 +64,7 @@ async function clearDemoData(pool) {
   const doctorIds = Object.values(doctors).map((d) => d.id);
 
   if (doctorIds.length > 0) {
-    const today = new Date().toISOString().slice(0, 10);
+    const { rows: [{ today }] } = await pool.query(`SELECT CURRENT_DATE::text AS today`);
     await pool.query(`
       DELETE FROM prescription_items WHERE prescription_id IN (
         SELECT pr.id FROM prescriptions pr
@@ -262,16 +262,31 @@ async function seedMedicineTemplates(pool, doctorId, items) {
   }
 }
 
+function localISODate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 function daysAgo(n) {
   const d = new Date();
   d.setDate(d.getDate() - n);
-  return d.toISOString().slice(0, 10);
+  return localISODate(d);
 }
 
 function daysAhead(n) {
   const d = new Date();
   d.setDate(d.getDate() + n);
-  return d.toISOString().slice(0, 10);
+  return localISODate(d);
+}
+
+async function setTokenCounter(pool, doctorId, visitDate, lastToken) {
+  await pool.query(
+    `INSERT INTO opd_token_counters (doctor_id, visit_date, last_token) VALUES ($1, $2, $3)
+     ON CONFLICT (doctor_id, visit_date) DO UPDATE SET last_token = $3`,
+    [doctorId, visitDate, lastToken]
+  );
 }
 
 export async function seedDemoData(pool) {
@@ -302,7 +317,7 @@ export async function seedDemoData(pool) {
     patientIds[p.phone] = await ensurePatient(pool, p);
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+  const { rows: [{ today }] } = await pool.query(`SELECT CURRENT_DATE::text AS today`);
   const p = (phone) => patientIds[phone];
 
   // ── Medicine templates (doctor saved medicines) ──
@@ -330,9 +345,9 @@ export async function seedDemoData(pool) {
       complaint: null, diagnosis: null, rx: null, payment: null },
     { phone: '9100000006', time: '10:15', apptStatus: 'checked_in', tokenStatus: 'skipped', token: 6,
       complaint: null, diagnosis: null, rx: null, payment: null },
-    { phone: '9100000007', time: '10:30', apptStatus: 'confirmed', tokenStatus: null, token: null,
+    { phone: '9100000007', time: '10:30', apptStatus: 'checked_in', tokenStatus: 'waiting', token: 7,
       bookedVia: 'phone', complaint: null, rx: null, payment: null },
-    { phone: '9100000008', time: '11:00', apptStatus: 'pending', tokenStatus: null, token: null,
+    { phone: '9100000008', time: '11:00', apptStatus: 'checked_in', tokenStatus: 'waiting', token: 8,
       bookedVia: 'website', complaint: null, rx: null, payment: null },
     { phone: '9100000009', time: '11:30', apptStatus: 'cancelled', tokenStatus: null, token: null,
       bookedVia: 'website', complaint: null, rx: null, payment: null },
@@ -379,52 +394,99 @@ export async function seedDemoData(pool) {
     }
   }
 
-  await pool.query(
-    `INSERT INTO opd_token_counters (doctor_id, visit_date, last_token) VALUES ($1, $2, $3)
-     ON CONFLICT (doctor_id, visit_date) DO UPDATE SET last_token = $3`,
-    [maske.id, today, maxToken]
-  );
+  await setTokenCounter(pool, maske.id, today, maxToken);
 
-  // ── TODAY — other doctors (smaller queues) ──
-  if (moon) {
+  // ── TODAY — other doctors (appointments + live queue tokens) ──
+  const otherToday = [
+    moon && {
+      doctor: moon, phone: '9100000011', time: '10:00', apptStatus: 'completed', token: 1, tokenStatus: 'completed',
+      bookedVia: 'walk_in', complaint: 'Chronic sinusitis', diagnosis: 'Allergic rhinitis with sinusitis',
+      notes: 'Advised steam inhalation.', rx: RX_ITEMS_ENT, pharmacyStatus: 'pending',
+      payment: { method: 'card_offline', status: 'completed' },
+    },
+    moon && {
+      doctor: moon, phone: '9100000002', time: '10:20', apptStatus: 'in_consultation', token: 2, tokenStatus: 'in_consultation',
+      bookedVia: 'phone', complaint: 'Nasal blockage', diagnosis: 'Deviated septum — conservative', notes: 'Demo ENT consult.',
+    },
+    moon && {
+      doctor: moon, phone: '9100000004', time: '10:40', apptStatus: 'checked_in', token: 3, tokenStatus: 'waiting',
+      bookedVia: 'website',
+    },
+    moon && {
+      doctor: moon, phone: '9100000014', time: '11:00', apptStatus: 'checked_in', token: 4, tokenStatus: 'waiting',
+      bookedVia: 'walk_in',
+    },
+    kolhe && {
+      doctor: kolhe, phone: '9100000012', time: '11:00', apptStatus: 'checked_in', token: 1, tokenStatus: 'called',
+      bookedVia: 'website',
+    },
+    kolhe && {
+      doctor: kolhe, phone: '9100000005', time: '11:20', apptStatus: 'checked_in', token: 2, tokenStatus: 'waiting',
+      bookedVia: 'phone',
+    },
+    kolhe && {
+      doctor: kolhe, phone: '9100000009', time: '11:40', apptStatus: 'checked_in', token: 3, tokenStatus: 'waiting',
+      bookedVia: 'walk_in',
+    },
+    lodhi && {
+      doctor: lodhi, phone: '9100000013', time: '17:00', apptStatus: 'checked_in', token: 1, tokenStatus: 'waiting',
+      bookedVia: 'phone',
+    },
+    lodhi && {
+      doctor: lodhi, phone: '9100000006', time: '17:20', apptStatus: 'checked_in', token: 2, tokenStatus: 'waiting',
+      bookedVia: 'website',
+    },
+    khandait && {
+      doctor: khandait, phone: '9100000007', time: '19:00', apptStatus: 'in_consultation', token: 1, tokenStatus: 'in_consultation',
+      bookedVia: 'walk_in', complaint: 'Migraine follow-up', diagnosis: 'Migraine without aura', notes: 'Demo neuro consult.',
+    },
+    khandait && {
+      doctor: khandait, phone: '9100000015', time: '19:20', apptStatus: 'checked_in', token: 2, tokenStatus: 'waiting',
+      bookedVia: 'phone',
+    },
+  ].filter(Boolean);
+
+  const otherMaxToken = {};
+  for (const s of otherToday) {
     const apptId = await insertAppointment(pool, {
-      patientId: p('9100000011'), doctorId: moon.id, date: today, time: '10:00',
-      status: 'completed', bookedVia: 'walk_in',
+      patientId: p(s.phone), doctorId: s.doctor.id, date: today, time: s.time,
+      status: s.apptStatus, bookedVia: s.bookedVia || 'walk_in',
     });
-    await insertToken(pool, { appointmentId: apptId, doctorId: moon.id, visitDate: today, tokenNumber: 1, status: 'completed', completedAt: new Date() });
-    const cId = await insertConsultation(pool, {
-      appointmentId: apptId, doctorId: moon.id, patientId: p('9100000011'),
-      complaint: 'Chronic sinusitis', diagnosis: 'Allergic rhinitis with sinusitis', notes: 'Advised steam inhalation.',
-    });
-    await insertPrescription(pool, {
-      consultationId: cId, doctorId: moon.id, patientId: p('9100000011'),
-      advice: 'Avoid cold foods and dust exposure.', pharmacyStatus: 'pending', items: RX_ITEMS_ENT, pharmacistId,
-    });
-    await insertPayment(pool, { appointmentId: apptId, amount: moon.consultation_fee, method: 'card_offline', status: 'completed', recordedBy: adminId });
-    await pool.query(
-      `INSERT INTO opd_token_counters (doctor_id, visit_date, last_token) VALUES ($1, $2, 1) ON CONFLICT (doctor_id, visit_date) DO UPDATE SET last_token = 1`,
-      [moon.id, today]
-    );
+
+    if (s.token) {
+      otherMaxToken[s.doctor.id] = Math.max(otherMaxToken[s.doctor.id] || 0, s.token);
+      await insertToken(pool, {
+        appointmentId: apptId, doctorId: s.doctor.id, visitDate: today,
+        tokenNumber: s.token, status: s.tokenStatus,
+        calledAt: ['called', 'in_consultation', 'completed', 'skipped'].includes(s.tokenStatus) ? new Date() : null,
+        completedAt: s.tokenStatus === 'completed' ? new Date() : null,
+      });
+    }
+
+    if (s.complaint) {
+      const consultId = await insertConsultation(pool, {
+        appointmentId: apptId, doctorId: s.doctor.id, patientId: p(s.phone),
+        complaint: s.complaint, diagnosis: s.diagnosis, notes: s.notes || 'Demo consultation notes.',
+      });
+      if (s.rx?.length) {
+        await insertPrescription(pool, {
+          consultationId: consultId, doctorId: s.doctor.id, patientId: p(s.phone),
+          advice: s.advice || 'Follow up as advised.',
+          pharmacyStatus: s.pharmacyStatus, items: s.rx, pharmacistId,
+        });
+      }
+    }
+
+    if (s.payment) {
+      await insertPayment(pool, {
+        appointmentId: apptId, amount: s.doctor.consultation_fee,
+        method: s.payment.method, status: s.payment.status, recordedBy: adminId,
+      });
+    }
   }
 
-  if (kolhe) {
-    const apptId = await insertAppointment(pool, {
-      patientId: p('9100000012'), doctorId: kolhe.id, date: today, time: '11:00',
-      status: 'checked_in', bookedVia: 'website',
-    });
-    await insertToken(pool, { appointmentId: apptId, doctorId: kolhe.id, visitDate: today, tokenNumber: 1, status: 'waiting' });
-    await pool.query(
-      `INSERT INTO opd_token_counters (doctor_id, visit_date, last_token) VALUES ($1, $2, 1) ON CONFLICT (doctor_id, visit_date) DO UPDATE SET last_token = 1`,
-      [kolhe.id, today]
-    );
-  }
-
-  if (lodhi) {
-    const apptId = await insertAppointment(pool, {
-      patientId: p('9100000013'), doctorId: lodhi.id, date: today, time: '17:00',
-      status: 'confirmed', bookedVia: 'phone',
-    });
-    // not checked in yet
+  for (const [doctorId, lastToken] of Object.entries(otherMaxToken)) {
+    await setTokenCounter(pool, doctorId, today, lastToken);
   }
 
   // ── FUTURE appointments ──
@@ -507,7 +569,8 @@ export async function seedDemoData(pool) {
 
   console.log('Demo data seeded:');
   console.log(`  • ${DEMO_PATIENTS.length} patients (phones 9100000001–9100000015)`);
-  console.log(`  • Today: Dr Maske OPD queue tokens #1–#6 + all appointment statuses`);
+  console.log(`  • Today: every active appointment is also in the OPD queue (cancelled/no-show excluded)`);
+  console.log(`  • Dr Maske tokens #1–#8; ENT / Ortho / Gynae / Neuro also have live queues`);
   console.log(`  • Pharmacy: 2 pending Rx (Priya + ENT patient), 1 dispensed`);
   console.log(`  • ${pastCases.length} past consultations with history`);
   console.log(`  • Future bookings, payments (cash/UPI/card), medicine templates`);

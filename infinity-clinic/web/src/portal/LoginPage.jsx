@@ -36,10 +36,13 @@ export default function LoginPage() {
         </div>
         <form className="form" onSubmit={handleSubmit}>
           {error && <div className="alert-error">{error}</div>}
-          <label>Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
-          <label>Password<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
+          <label>Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required /></label>
+          <label>Password<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required /></label>
           <button type="submit" className="btn btn-primary btn-block">Sign In</button>
         </form>
+        <p className="text-body-sm" style={{ textAlign: 'center', marginTop: 16, color: 'var(--ink-soft)' }}>
+          Demo: admin@infinityclinic.com / Admin@123
+        </p>
         <p style={{ textAlign: 'center', marginTop: 24 }}><Link to="/">← Back to website</Link></p>
       </div>
     </div>

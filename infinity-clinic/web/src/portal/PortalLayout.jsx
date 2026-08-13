@@ -44,6 +44,17 @@ export default function PortalLayout({ allowedRoles }) {
     setMobileNav(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') setMobileNav(false); };
+    const onResize = () => { if (window.innerWidth > 1024) setMobileNav(false); };
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
+
   if (loading) return <div className="portal-loading">Loading...</div>;
   if (!user) return <Navigate to="/portal/login" replace />;
   if (allowedRoles && !allowedRoles.includes(user.role)) {
@@ -95,7 +106,7 @@ export default function PortalLayout({ allowedRoles }) {
 
       <div className="portal-content">
         <header className="portal-mobile-header">
-          <button type="button" className={`menu-toggle ${mobileNav ? 'open' : ''}`} aria-label="Menu" aria-expanded={mobileNav} onClick={() => setMobileNav((o) => !o)}>
+          <button type="button" className={`menu-toggle ${mobileNav ? 'open' : ''}`} aria-label={mobileNav ? 'Close menu' : 'Open menu'} aria-expanded={mobileNav} aria-controls="portal-mobile-nav" onClick={() => setMobileNav((o) => !o)}>
             <span /><span /><span />
           </button>
           <span className="portal-mobile-title">{CLINIC.name}</span>
@@ -104,7 +115,7 @@ export default function PortalLayout({ allowedRoles }) {
         {mobileNav && (
           <>
             <button type="button" className="nav-backdrop portal-nav-backdrop" aria-label="Close menu" onClick={() => setMobileNav(false)} />
-            <nav className="portal-mobile-nav">
+            <nav id="portal-mobile-nav" className="portal-mobile-nav">
               <NavLinks onClick={() => setMobileNav(false)} />
               <div className="portal-sidebar-footer">
                 <button

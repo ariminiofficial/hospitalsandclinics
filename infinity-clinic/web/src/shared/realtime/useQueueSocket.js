@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
-import { api } from '../api/client.js';
+import { api, API_ORIGIN } from '../api/client.js';
 
 /**
  * @param {string|null} doctorId — required for socket room + receptionist OPD path
@@ -31,7 +31,11 @@ export function useQueueSocket(doctorId, onUpdate, { queueUrl } = {}) {
     const token = api.accessToken;
     if (!token) return undefined;
 
-    const socket = io({ path: '/socket.io', auth: { token } });
+    const socket = io(API_ORIGIN || undefined, {
+      path: '/socket.io',
+      auth: { token },
+      withCredentials: true,
+    });
     socketRef.current = socket;
 
     socket.on('queue:update', () => fetchSnapshot());
