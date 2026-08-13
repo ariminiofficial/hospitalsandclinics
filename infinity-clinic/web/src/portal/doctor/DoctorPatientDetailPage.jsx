@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../../shared/api/client.js';
+import { doctorQs, useDoctorScope } from './useDoctorScope.js';
 import { formatFrequency } from '../../shared/schema/prescription.js';
 import PortalHeader from '../shared/PortalHeader.jsx';
 import BackButton from '../shared/BackButton.jsx';
@@ -77,6 +78,7 @@ function VisitCard({ visit, onPrint }) {
 
 export default function DoctorPatientDetailPage() {
   const { patientId } = useParams();
+  const { doctorId } = useDoctorScope();
   const [patient, setPatient] = useState(null);
   const [history, setHistory] = useState([]);
   const [printId, setPrintId] = useState(null);
@@ -84,9 +86,10 @@ export default function DoctorPatientDetailPage() {
 
   useEffect(() => {
     setLoading(true);
+    const historyQs = doctorId ? `mine=1&${doctorQs(doctorId)}` : 'mine=1';
     Promise.all([
       api.get(`/portal/patients/${patientId}`),
-      api.get(`/portal/patients/${patientId}/history?mine=1`),
+      api.get(`/portal/patients/${patientId}/history?${historyQs}`),
     ])
       .then(([p, h]) => {
         setPatient(p);
@@ -94,7 +97,7 @@ export default function DoctorPatientDetailPage() {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [patientId]);
+  }, [patientId, doctorId]);
 
   if (printId) {
     return <PrescriptionPrint prescriptionId={printId} onClose={() => setPrintId(null)} />;

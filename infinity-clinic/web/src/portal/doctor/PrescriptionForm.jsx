@@ -22,18 +22,21 @@ function templateLabel(item) {
   return parts.join(' · ');
 }
 
-export default function PrescriptionForm({ value, onChange }) {
+export default function PrescriptionForm({ value, onChange, doctorId }) {
   const [templates, setTemplates] = useState([]);
   const [search, setSearch] = useState('');
 
   const loadTemplates = (q = '') => {
-    const query = q ? `?q=${encodeURIComponent(q)}` : '';
+    const params = new URLSearchParams();
+    if (q) params.set('q', q);
+    if (doctorId) params.set('doctorId', doctorId);
+    const query = params.toString() ? `?${params}` : '';
     api.get(`/portal/prescriptions/templates${query}`).then(setTemplates).catch(console.error);
   };
 
   useEffect(() => {
     loadTemplates();
-  }, []);
+  }, [doctorId]);
 
   const updateItem = (idx, patch) => {
     const items = value.items.map((item, i) => (i === idx ? { ...item, ...patch } : item));

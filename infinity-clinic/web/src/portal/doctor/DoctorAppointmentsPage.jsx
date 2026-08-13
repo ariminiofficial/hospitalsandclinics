@@ -7,8 +7,10 @@ import StatusBadge from '../shared/StatusBadge.jsx';
 import AppointmentDetailModal from '../shared/AppointmentDetailModal.jsx';
 import { PAGE_HELP } from '../shared/portalHelp.js';
 import { APPOINTMENT_STATUS_OPTIONS, matchesSearch } from '../shared/portalSearch.js';
+import { DoctorPicker, doctorQs, useDoctorScope } from './useDoctorScope.js';
 
 export default function DoctorAppointmentsPage() {
+  const { doctorId, doctors, isAdminView, setDoctorId } = useDoctorScope();
   const [appointments, setAppointments] = useState([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -16,8 +18,12 @@ export default function DoctorAppointmentsPage() {
   const [viewAppointment, setViewAppointment] = useState(null);
 
   useEffect(() => {
-    api.get('/portal/consultations/today').then(setAppointments).catch(console.error);
-  }, []);
+    if (!doctorId) {
+      setAppointments([]);
+      return;
+    }
+    api.get(`/portal/consultations/today?${doctorQs(doctorId)}`).then(setAppointments).catch(console.error);
+  }, [doctorId]);
 
   const filtered = useMemo(() => appointments.filter((a) => {
     const statusOk = statusFilter === 'all' || a.status === statusFilter;
@@ -31,7 +37,9 @@ export default function DoctorAppointmentsPage() {
         title={PAGE_HELP.doctorAppointments.title}
         subtitle={PAGE_HELP.doctorAppointments.subtitle}
         description={PAGE_HELP.doctorAppointments.description}
-      />
+      >
+        {isAdminView && <DoctorPicker doctors={doctors} value={doctorId} onChange={setDoctorId} />}
+      </PortalHeader>
 
       <PortalToolbar
         search={search}

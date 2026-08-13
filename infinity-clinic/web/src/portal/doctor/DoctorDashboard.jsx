@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../shared/auth/AuthContext.jsx';
 import { useQueueSocket } from '../../shared/realtime/useQueueSocket.js';
 import { api } from '../../shared/api/client.js';
+import { DoctorPicker, doctorQs, useDoctorScope } from './useDoctorScope.js';
 import { emptyConsultationNotes } from '../../shared/schema/index.js';
 import { emptyPrescriptionItem, normalizePrescriptionItem } from '../../shared/schema/prescription.js';
 import PortalHeader from '../shared/PortalHeader.jsx';
@@ -17,6 +18,7 @@ import { matchesSearch, TOKEN_STATUS_OPTIONS } from '../shared/portalSearch.js';
 
 export default function DoctorDashboard() {
   const { user } = useAuth();
+  const { doctorId, doctors, isAdminView, setDoctorId, selectedDoctor } = useDoctorScope();
   const [queue, setQueue] = useState([]);
   const [activeToken, setActiveToken] = useState(null);
   const [consultation, setConsultation] = useState(null);
@@ -27,11 +29,21 @@ export default function DoctorDashboard() {
   const [queueSearch, setQueueSearch] = useState('');
   const [queueStatus, setQueueStatus] = useState('all');
   const [completionNote, setCompletionNote] = useState('');
-  const doctorId = user?.doctorId;
 
-  const refreshQueue = () => api.get('/portal/consultations/queue').then(setQueue);
+  const queueUrl = doctorId ? `/portal/consultations/queue?${doctorQs(doctorId)}` : null;
+  const refreshQueue = () => {
+    if (!queueUrl) return Promise.resolve();
+    return api.get(queueUrl).then(setQueue);
+  };
 
-  useQueueSocket(doctorId, setQueue, { queueUrl: '/portal/consultations/queue' });
+  useQueueSocket(doctorId, setQueue, { queueUrl: queueUrl || undefined });
+
+  useEffect(() => {
+    setActiveToken(null);
+    setConsultation(null);
+    setCompletionNote('');
+    setQueue([]);
+  }, [doctorId]);
 
   const waiting = queue.filter((t) => ['waiting', 'called'].includes(t.status));
   const current = queue.find((t) => t.status === 'in_consultation');
@@ -102,12 +114,12 @@ export default function DoctorDashboard() {
     refreshQueue();
   };
 
-  if (!doctorId) {
+  if (!doctorId && !isAdminView) {
     return (
       <div className="portal-page">
         <div className="card">
           <h1>Doctor Dashboard</h1>
-          <p className="text-body-sm">Your users account is not linked to a doctors row. Ask admin to create your doctor profile.</p>
+          <p className="text-body-sm">Your user account is not linked to a doctor profile. Ask admin to create your doctor profile.</p>
         </div>
       </div>
     );
@@ -123,10 +135,16 @@ export default function DoctorDashboard() {
     <div className="portal-page">
       <PortalHeader
         title={PAGE_HELP.doctorDashboard.title}
-        subtitle={user.doctorName ? `${user.doctorName} · ${user.specialization || ''}` : new Date().toLocaleDateString('en-IN', { weekday: 'long', month: 'long', day: 'numeric' })}
+        subtitle={
+          selectedDoctor
+            ? `${selectedDoctor.full_name} · ${selectedDoctor.specialization || ''}`
+            : user.doctorName
+              ? `${user.doctorName} · ${user.specialization || ''}`
+              : new Date().toLocaleDateString('en-IN', { weekday: 'long', month: 'long', day: 'numeric' })
+        }
         description={PAGE_HELP.doctorDashboard.description}
       >
-        <StatusBadge status="confirmed" />
+        {isAdminView && <DoctorPicker doctors={doctors} value={doctorId} onChange={setDoctorId} />}
       </PortalHeader>
 
       {completionNote && <div className="alert-success">{completionNote}</div>}
@@ -168,7 +186,7 @@ export default function DoctorDashboard() {
 
               <div className="card" style={{ marginBottom: '1.5rem' }}>
                 <SectionIntro title={SECTION_HELP.prescription.title} description={SECTION_HELP.prescription.description} />
-                <PrescriptionForm value={prescription} onChange={setPrescription} />
+                <PrescriptionForm value={prescription} onChange={setPrescription} doctorId={doctorId} />
               </div>
 
               <div className="portal-action-row">

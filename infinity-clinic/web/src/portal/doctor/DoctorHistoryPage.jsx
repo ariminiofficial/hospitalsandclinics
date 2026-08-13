@@ -9,21 +9,23 @@ import VisitDetailModal from '../shared/VisitDetailModal.jsx';
 import PrescriptionPrint from './PrescriptionPrint.jsx';
 import { PAGE_HELP } from '../shared/portalHelp.js';
 import { matchesSearch } from '../shared/portalSearch.js';
+import { DoctorPicker, doctorQs, useDoctorScope } from './useDoctorScope.js';
 
 export default function DoctorHistoryPage() {
+  const { doctorId, doctors, isAdminView, setDoctorId } = useDoctorScope();
   const [history, setHistory] = useState([]);
   const [days, setDays] = useState(30);
   const [search, setSearch] = useState('');
   const [viewVisit, setViewVisit] = useState(null);
   const [printId, setPrintId] = useState(null);
 
-  if (printId) {
-    return <PrescriptionPrint prescriptionId={printId} onClose={() => setPrintId(null)} />;
-  }
-
   useEffect(() => {
-    api.get(`/portal/consultations/history?days=${days}`).then(setHistory).catch(console.error);
-  }, [days]);
+    if (!doctorId) {
+      setHistory([]);
+      return;
+    }
+    api.get(`/portal/consultations/history?days=${days}&${doctorQs(doctorId)}`).then(setHistory).catch(console.error);
+  }, [days, doctorId]);
 
   const filtered = useMemo(() => history.filter((h) => matchesSearch(
     search,
@@ -34,6 +36,10 @@ export default function DoctorHistoryPage() {
     h.appointment_date,
   )), [history, search]);
 
+  if (printId) {
+    return <PrescriptionPrint prescriptionId={printId} onClose={() => setPrintId(null)} />;
+  }
+
   return (
     <div className="portal-page">
       <PortalHeader
@@ -41,6 +47,7 @@ export default function DoctorHistoryPage() {
         subtitle={PAGE_HELP.doctorHistory.subtitle}
         description={PAGE_HELP.doctorHistory.description}
       >
+        {isAdminView && <DoctorPicker doctors={doctors} value={doctorId} onChange={setDoctorId} />}
         <select className="portal-select" value={days} onChange={(e) => setDays(Number(e.target.value))}>
           <option value={7}>Last 7 days</option>
           <option value={30}>Last 30 days</option>

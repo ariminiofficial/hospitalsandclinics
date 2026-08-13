@@ -14,13 +14,17 @@ const router = Router();
 router.use(authenticate);
 router.use(authorize('doctor', 'admin'));
 
+function resolveDoctorId(req) {
+  if (!req.user.doctorId && req.user.role !== 'admin') {
+    throw new AppError('Doctor profile not found', 403, 'FORBIDDEN');
+  }
+  return req.query.doctorId || req.user.doctorId || null;
+}
+
 router.get('/queue', requirePermission('consultations.view_queue'), async (req, res, next) => {
   try {
-    const doctorId = req.user.doctorId;
-    if (!doctorId && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Doctor profile not found' });
-    }
-    const targetDoctorId = req.query.doctorId || doctorId;
+    const targetDoctorId = resolveDoctorId(req);
+    if (!targetDoctorId) return res.json([]);
     const { rows } = await query(
       `SELECT t.*, p.id AS patient_id, p.full_name AS patient_name, p.phone AS patient_phone,
               p.date_of_birth, p.gender, a.appointment_time, a.id AS appointment_id
@@ -39,14 +43,14 @@ router.get('/queue', requirePermission('consultations.view_queue'), async (req, 
 
 router.get('/today', requirePermission('consultations.today'), async (req, res, next) => {
   try {
-    const doctorId = req.user.doctorId;
-    if (!doctorId) return res.status(403).json({ error: 'Doctor profile not found' });
+    const targetDoctorId = resolveDoctorId(req);
+    if (!targetDoctorId) return res.json([]);
     const { rows } = await query(
       `SELECT a.*, p.id AS patient_id, p.full_name AS patient_name, p.phone AS patient_phone
        FROM appointments a JOIN patients p ON p.id = a.patient_id
        WHERE a.doctor_id = $1 AND a.appointment_date = CURRENT_DATE
        ORDER BY a.appointment_time`,
-      [doctorId]
+      [targetDoctorId]
     );
     res.json(rows);
   } catch (err) {
@@ -56,11 +60,8 @@ router.get('/today', requirePermission('consultations.today'), async (req, res, 
 
 router.get('/history', requirePermission('consultations.history'), async (req, res, next) => {
   try {
-    const doctorId = req.user.doctorId;
-    if (!doctorId && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Doctor profile not found' });
-    }
-    const targetDoctorId = req.query.doctorId || doctorId;
+    const targetDoctorId = resolveDoctorId(req);
+    if (!targetDoctorId) return res.json([]);
     const days = Math.min(parseInt(req.query.days, 10) || 30, 90);
     const { rows } = await query(
       `SELECT c.id, c.chief_complaint, c.diagnosis, c.notes, c.created_at,
