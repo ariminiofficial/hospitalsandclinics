@@ -45,7 +45,7 @@ npm run seed
 npm run dev
 ```
 
-API runs at `http://localhost:4000`.
+API runs at `https://clinic.arimini.in`.
 
 ### 3. Web setup
 

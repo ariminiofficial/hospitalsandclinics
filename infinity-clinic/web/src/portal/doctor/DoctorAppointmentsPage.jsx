@@ -7,7 +7,7 @@ import StatusBadge from '../shared/StatusBadge.jsx';
 import AppointmentDetailModal from '../shared/AppointmentDetailModal.jsx';
 import { PAGE_HELP } from '../shared/portalHelp.js';
 import { APPOINTMENT_STATUS_OPTIONS, matchesSearch } from '../shared/portalSearch.js';
-import { DoctorPicker, doctorQs, useDoctorScope } from './useDoctorScope.js';
+import { DoctorPicker, doctorQs, useDoctorScope } from './useDoctorScope.jsx';
 
 export default function DoctorAppointmentsPage() {
   const { doctorId, doctors, isAdminView, setDoctorId } = useDoctorScope();

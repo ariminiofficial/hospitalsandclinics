@@ -10,6 +10,8 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { initSocketServer } from './realtime/wsServer.js';
 
 const app = express();
+// Trust only the first proxy hop (nginx) for X-Forwarded-For, not the full chain
+app.set('trust proxy', 1);
 const server = http.createServer(app);
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));

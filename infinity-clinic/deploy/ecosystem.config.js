@@ -1,8 +1,10 @@
+const path = require('path');
+
 module.exports = {
   apps: [
     {
       name: 'infinity-api',
-      cwd: './api',
+      cwd: path.resolve(__dirname, '../api'),
       script: 'src/index.js',
       instances: 1,
       exec_mode: 'fork',
@@ -13,8 +15,8 @@ module.exports = {
         COOKIE_SECURE: 'true',
       },
       max_memory_restart: '500M',
-      error_file: './logs/api-error.log',
-      out_file: './logs/api-out.log',
+      error_file: path.resolve(__dirname, 'logs/api-error.log'),
+      out_file: path.resolve(__dirname, 'logs/api-out.log'),
     },
   ],
 };

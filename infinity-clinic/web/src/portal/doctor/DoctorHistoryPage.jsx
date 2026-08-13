@@ -9,7 +9,7 @@ import VisitDetailModal from '../shared/VisitDetailModal.jsx';
 import PrescriptionPrint from './PrescriptionPrint.jsx';
 import { PAGE_HELP } from '../shared/portalHelp.js';
 import { matchesSearch } from '../shared/portalSearch.js';
-import { DoctorPicker, doctorQs, useDoctorScope } from './useDoctorScope.js';
+import { DoctorPicker, doctorQs, useDoctorScope } from './useDoctorScope.jsx';
 
 export default function DoctorHistoryPage() {
   const { doctorId, doctors, isAdminView, setDoctorId } = useDoctorScope();

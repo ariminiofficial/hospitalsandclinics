@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../shared/auth/AuthContext.jsx';
 import { useQueueSocket } from '../../shared/realtime/useQueueSocket.js';
 import { api } from '../../shared/api/client.js';
-import { DoctorPicker, doctorQs, useDoctorScope } from './useDoctorScope.js';
+import { DoctorPicker, doctorQs, useDoctorScope } from './useDoctorScope.jsx';
 import { emptyConsultationNotes } from '../../shared/schema/index.js';
 import { emptyPrescriptionItem, normalizePrescriptionItem } from '../../shared/schema/prescription.js';
 import PortalHeader from '../shared/PortalHeader.jsx';

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../../shared/api/client.js';
-import { doctorQs, useDoctorScope } from './useDoctorScope.js';
+import { doctorQs, useDoctorScope } from './useDoctorScope.jsx';
 import { formatFrequency } from '../../shared/schema/prescription.js';
 import PortalHeader from '../shared/PortalHeader.jsx';
 import BackButton from '../shared/BackButton.jsx';

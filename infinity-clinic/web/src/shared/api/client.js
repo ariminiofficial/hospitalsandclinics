@@ -99,3 +99,4 @@ class ApiClient {
 }
 
 export const api = new ApiClient();
+export { API_BASE };
