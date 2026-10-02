@@ -28,7 +28,7 @@ export default function SettingsPage() {
     ]).then(([settings, contentRows]) => {
       const contact = contentRows.find((r) => r.section_key === 'contact')?.content || {};
       setForm({
-        clinicName: parseSetting(settings.clinic_name) || 'Infinity Clinics',
+        clinicName: parseSetting(settings.clinic_name) || 'Pulse Multi-Specialty Clinic',
         clinicPhone: parseSetting(settings.clinic_phone) || contact.phone?.replace(/\D/g, '').slice(-10) || '',
         clinicEmail: contact.email || '',
         clinicAddress: parseSetting(settings.clinic_address) || contact.address || '',
@@ -50,7 +50,7 @@ export default function SettingsPage() {
         api.put('/portal/admin/cms/content/contact', {
           content: {
             clinicName: form.clinicName,
-            tagline: 'Omkar Nagar · Nagpur',
+            tagline: 'Metro Health Park · City Centre',
             phone: form.clinicPhone ? `+91 ${form.clinicPhone.slice(0, 4)} ${form.clinicPhone.slice(4, 7)} ${form.clinicPhone.slice(7)}` : '',
             email: form.clinicEmail,
             address: form.clinicAddress,

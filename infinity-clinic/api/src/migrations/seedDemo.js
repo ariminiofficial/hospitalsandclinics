@@ -6,21 +6,21 @@
 const DEMO_TAG = '__demo__';
 
 const DEMO_PATIENTS = [
-  { phone: '9100000001', full_name: 'Rahul Sharma', email: 'rahul.demo@example.com', date_of_birth: '1985-03-12', gender: 'Male', address: 'Omkar Nagar, Nagpur' },
-  { phone: '9100000002', full_name: 'Priya Deshmukh', email: 'priya.demo@example.com', date_of_birth: '1992-07-22', gender: 'Female', address: 'Manewada, Nagpur' },
-  { phone: '9100000003', full_name: 'Amit Patil', email: 'amit.demo@example.com', date_of_birth: '1978-11-05', gender: 'Male', address: 'Dharampeth, Nagpur' },
-  { phone: '9100000004', full_name: 'Sunita More', email: 'sunita.demo@example.com', date_of_birth: '1990-01-18', gender: 'Female', address: 'Sadar, Nagpur' },
-  { phone: '9100000005', full_name: 'Vikram Kulkarni', email: 'vikram.demo@example.com', date_of_birth: '1982-09-30', gender: 'Male', address: 'Civil Lines, Nagpur' },
-  { phone: '9100000006', full_name: 'Anjali Rao', email: 'anjali.demo@example.com', date_of_birth: '1995-04-08', gender: 'Female', address: 'Hingna, Nagpur' },
-  { phone: '9100000007', full_name: 'Ramesh Verma', email: 'ramesh.demo@example.com', date_of_birth: '1970-12-25', gender: 'Male', address: 'Koradi, Nagpur' },
-  { phone: '9100000008', full_name: 'Kavita Joshi', email: 'kavita.demo@example.com', date_of_birth: '1988-06-14', gender: 'Female', address: 'Wardha Road, Nagpur' },
-  { phone: '9100000009', full_name: 'Suresh Naidu', email: 'suresh.demo@example.com', date_of_birth: '1975-02-03', gender: 'Male', address: 'Kamptee, Nagpur' },
-  { phone: '9100000010', full_name: 'Meera Iyer', email: 'meera.demo@example.com', date_of_birth: '1998-10-19', gender: 'Female', address: 'Besa, Nagpur' },
-  { phone: '9100000011', full_name: 'Deepak Singh', email: 'deepak.demo@example.com', date_of_birth: '1983-08-07', gender: 'Male', address: 'Trimurti Nagar, Nagpur' },
-  { phone: '9100000012', full_name: 'Pooja Gupta', email: 'pooja.demo@example.com', date_of_birth: '1991-05-28', gender: 'Female', address: 'Sitabuldi, Nagpur' },
-  { phone: '9100000013', full_name: 'Harish Reddy', email: 'harish.demo@example.com', date_of_birth: '1968-03-15', gender: 'Male', address: 'Ramdaspeth, Nagpur' },
-  { phone: '9100000014', full_name: 'Neha Chavan', email: 'neha.demo@example.com', date_of_birth: '1994-12-01', gender: 'Female', address: 'Ambazari, Nagpur' },
-  { phone: '9100000015', full_name: 'Sanjay Mehta', email: 'sanjay.demo@example.com', date_of_birth: '1980-07-09', gender: 'Male', address: 'Laxmi Nagar, Nagpur' },
+  { phone: '9100000001', full_name: 'Rahul Sharma', email: 'rahul.demo@example.com', date_of_birth: '1985-03-12', gender: 'Male', address: 'Plot 12, Sunrise Avenue, City Centre' },
+  { phone: '9100000002', full_name: 'Priya Deshmukh', email: 'priya.demo@example.com', date_of_birth: '1992-07-22', gender: 'Female', address: 'Flat 402, Green Park Heights, City Centre' },
+  { phone: '9100000003', full_name: 'Amit Patil', email: 'amit.demo@example.com', date_of_birth: '1978-11-05', gender: 'Male', address: 'B-14, Metro Enclave, City Centre' },
+  { phone: '9100000004', full_name: 'Sunita More', email: 'sunita.demo@example.com', date_of_birth: '1990-01-18', gender: 'Female', address: 'House 88, Lakeview Colony, City Centre' },
+  { phone: '9100000005', full_name: 'Vikram Kulkarni', email: 'vikram.demo@example.com', date_of_birth: '1982-09-30', gender: 'Male', address: 'Plot 55, Central Square, City Centre' },
+  { phone: '9100000006', full_name: 'Anjali Rao', email: 'anjali.demo@example.com', date_of_birth: '1995-04-08', gender: 'Female', address: 'Flat 201, Royal Palms, City Centre' },
+  { phone: '9100000007', full_name: 'Ramesh Verma', email: 'ramesh.demo@example.com', date_of_birth: '1970-12-25', gender: 'Male', address: 'Lane 4, Model Town, City Centre' },
+  { phone: '9100000008', full_name: 'Kavita Joshi', email: 'kavita.demo@example.com', date_of_birth: '1988-06-14', gender: 'Female', address: 'Tower 3, Skyline Apartments, City Centre' },
+  { phone: '9100000009', full_name: 'Suresh Naidu', email: 'suresh.demo@example.com', date_of_birth: '1975-02-03', gender: 'Male', address: 'Sector 8, Garden View, City Centre' },
+  { phone: '9100000010', full_name: 'Meera Iyer', email: 'meera.demo@example.com', date_of_birth: '1998-10-19', gender: 'Female', address: 'Plot 71, Silver Oaks, City Centre' },
+  { phone: '9100000011', full_name: 'Deepak Singh', email: 'deepak.demo@example.com', date_of_birth: '1983-08-07', gender: 'Male', address: 'B-7, Harmony Residency, City Centre' },
+  { phone: '9100000012', full_name: 'Pooja Gupta', email: 'pooja.demo@example.com', date_of_birth: '1991-05-28', gender: 'Female', address: 'Flat 103, Lotus Towers, City Centre' },
+  { phone: '9100000013', full_name: 'Harish Reddy', email: 'harish.demo@example.com', date_of_birth: '1968-03-15', gender: 'Male', address: 'Road No. 2, Emerald Park, City Centre' },
+  { phone: '9100000014', full_name: 'Neha Chavan', email: 'neha.demo@example.com', date_of_birth: '1994-12-01', gender: 'Female', address: 'Block C, Golden Meadows, City Centre' },
+  { phone: '9100000015', full_name: 'Sanjay Mehta', email: 'sanjay.demo@example.com', date_of_birth: '1980-07-09', gender: 'Male', address: 'Flat 502, Pearl Arcade, City Centre' },
 ];
 
 const RX_ITEMS_CARDIO = [
@@ -147,8 +147,14 @@ async function getDoctorMap(pool) {
   const { rows } = await pool.query(
     `SELECT d.id, d.full_name, d.consultation_fee, u.email
      FROM doctors d JOIN users u ON u.id = d.user_id
-     WHERE u.email IN ($1, $2, $3, $4, $5)`,
+     WHERE u.email IN ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
     [
+      'doctor@pulseclinic.demo',
+      'nair@pulseclinic.demo',
+      'kapoor@pulseclinic.demo',
+      'sen@pulseclinic.demo',
+      'roy@pulseclinic.demo',
+      // backward compatibility lookup
       'doctor@infinityclinic.com',
       'moon@infinityclinics.com',
       'kolhe@infinityclinics.com',
@@ -294,21 +300,23 @@ export async function seedDemoData(pool) {
   await clearDemoData(pool);
 
   const doctors = await getDoctorMap(pool);
-  const maske = doctors['doctor@infinityclinic.com'];
-  const moon = doctors['moon@infinityclinics.com'];
-  const kolhe = doctors['kolhe@infinityclinics.com'];
-  const khandait = doctors['khandait@infinityclinics.com'];
-  const lodhi = doctors['lodhi@infinityclinics.com'];
+  const sharma = doctors['doctor@pulseclinic.demo'] || doctors['doctor@infinityclinic.com'];
+  const nair = doctors['nair@pulseclinic.demo'] || doctors['moon@infinityclinics.com'];
+  const kapoor = doctors['kapoor@pulseclinic.demo'] || doctors['kolhe@infinityclinics.com'];
+  const sen = doctors['sen@pulseclinic.demo'] || doctors['khandait@infinityclinics.com'];
+  const roy = doctors['roy@pulseclinic.demo'] || doctors['lodhi@infinityclinics.com'];
 
-  if (!maske) {
+  if (!sharma) {
     console.warn('Demo seed skipped: doctors not found. Run base seed first.');
     return;
   }
 
-  const { rows: adminRows } = await pool.query(`SELECT id FROM users WHERE email = 'admin@infinityclinic.com'`);
+  const { rows: adminRows } = await pool.query(
+    `SELECT id FROM users WHERE email IN ('admin@pulseclinic.demo', 'admin@infinityclinic.com') LIMIT 1`
+  );
   const adminId = adminRows[0]?.id;
   const { rows: pharmRows } = await pool.query(
-    `SELECT p.id FROM pharmacists p JOIN users u ON u.id = p.user_id WHERE u.email = 'pharmacy@infinityclinic.com'`
+    `SELECT p.id FROM pharmacists p JOIN users u ON u.id = p.user_id WHERE u.email IN ('pharmacy@pulseclinic.demo', 'pharmacy@infinityclinic.com') LIMIT 1`
   );
   const pharmacistId = pharmRows[0]?.id;
 
@@ -321,14 +329,14 @@ export async function seedDemoData(pool) {
   const p = (phone) => patientIds[phone];
 
   // ── Medicine templates (doctor saved medicines) ──
-  await seedMedicineTemplates(pool, maske.id, RX_ITEMS_CARDIO);
-  await seedMedicineTemplates(pool, maske.id, [{ medicine_name: 'Paracetamol 650mg', dose: '1 tablet', times_per_day: 3, timing_morning: true, timing_afternoon: true, timing_evening: true, duration: '5 days', instructions: 'After food' }]);
-  if (moon) await seedMedicineTemplates(pool, moon.id, RX_ITEMS_ENT);
-  if (kolhe) await seedMedicineTemplates(pool, kolhe.id, RX_ITEMS_ORTHO);
-  if (khandait) await seedMedicineTemplates(pool, khandait.id, RX_ITEMS_NEURO);
-  if (lodhi) await seedMedicineTemplates(pool, lodhi.id, RX_ITEMS_GYNAE);
+  await seedMedicineTemplates(pool, sharma.id, RX_ITEMS_CARDIO);
+  await seedMedicineTemplates(pool, sharma.id, [{ medicine_name: 'Paracetamol 650mg', dose: '1 tablet', times_per_day: 3, timing_morning: true, timing_afternoon: true, timing_evening: true, duration: '5 days', instructions: 'After food' }]);
+  if (nair) await seedMedicineTemplates(pool, nair.id, RX_ITEMS_ENT);
+  if (kapoor) await seedMedicineTemplates(pool, kapoor.id, RX_ITEMS_ORTHO);
+  if (sen) await seedMedicineTemplates(pool, sen.id, RX_ITEMS_NEURO);
+  if (roy) await seedMedicineTemplates(pool, roy.id, RX_ITEMS_GYNAE);
 
-  // ── TODAY — Dr Maske queue (full OPD workflow) ──
+  // ── TODAY — Dr Sharma queue (full OPD workflow) ──
   const scenarios = [
     { phone: '9100000001', time: '09:00', apptStatus: 'completed', tokenStatus: 'completed', token: 1,
       complaint: 'Chest tightness on exertion', diagnosis: 'Stable angina — on medical management',
@@ -358,14 +366,14 @@ export async function seedDemoData(pool) {
   let maxToken = 0;
   for (const s of scenarios) {
     const apptId = await insertAppointment(pool, {
-      patientId: p(s.phone), doctorId: maske.id, date: today, time: s.time,
+      patientId: p(s.phone), doctorId: sharma.id, date: today, time: s.time,
       status: s.apptStatus, bookedVia: s.bookedVia || 'walk_in',
     });
 
     if (s.token) {
       maxToken = Math.max(maxToken, s.token);
       await insertToken(pool, {
-        appointmentId: apptId, doctorId: maske.id, visitDate: today,
+        appointmentId: apptId, doctorId: sharma.id, visitDate: today,
         tokenNumber: s.token, status: s.tokenStatus,
         calledAt: ['called', 'in_consultation', 'completed', 'skipped'].includes(s.tokenStatus) ? new Date() : null,
         completedAt: s.tokenStatus === 'completed' ? new Date() : null,
@@ -374,12 +382,12 @@ export async function seedDemoData(pool) {
 
     if (s.complaint) {
       const consultId = await insertConsultation(pool, {
-        appointmentId: apptId, doctorId: maske.id, patientId: p(s.phone),
+        appointmentId: apptId, doctorId: sharma.id, patientId: p(s.phone),
         complaint: s.complaint, diagnosis: s.diagnosis, notes: 'Demo consultation notes.',
       });
       if (s.rx?.length) {
         await insertPrescription(pool, {
-          consultationId: consultId, doctorId: maske.id, patientId: p(s.phone),
+          consultationId: consultId, doctorId: sharma.id, patientId: p(s.phone),
           advice: 'Low salt diet. Regular walking 30 min daily. Follow up in 2 weeks.',
           pharmacyStatus: s.pharmacyStatus, items: s.rx, pharmacistId,
         });
@@ -388,60 +396,60 @@ export async function seedDemoData(pool) {
 
     if (s.payment) {
       await insertPayment(pool, {
-        appointmentId: apptId, amount: maske.consultation_fee,
+        appointmentId: apptId, amount: sharma.consultation_fee,
         method: s.payment.method, status: s.payment.status, recordedBy: adminId,
       });
     }
   }
 
-  await setTokenCounter(pool, maske.id, today, maxToken);
+  await setTokenCounter(pool, sharma.id, today, maxToken);
 
   // ── TODAY — other doctors (appointments + live queue tokens) ──
   const otherToday = [
-    moon && {
-      doctor: moon, phone: '9100000011', time: '10:00', apptStatus: 'completed', token: 1, tokenStatus: 'completed',
+    nair && {
+      doctor: nair, phone: '9100000011', time: '10:00', apptStatus: 'completed', token: 1, tokenStatus: 'completed',
       bookedVia: 'walk_in', complaint: 'Chronic sinusitis', diagnosis: 'Allergic rhinitis with sinusitis',
       notes: 'Advised steam inhalation.', rx: RX_ITEMS_ENT, pharmacyStatus: 'pending',
       payment: { method: 'card_offline', status: 'completed' },
     },
-    moon && {
-      doctor: moon, phone: '9100000002', time: '10:20', apptStatus: 'in_consultation', token: 2, tokenStatus: 'in_consultation',
+    nair && {
+      doctor: nair, phone: '9100000002', time: '10:20', apptStatus: 'in_consultation', token: 2, tokenStatus: 'in_consultation',
       bookedVia: 'phone', complaint: 'Nasal blockage', diagnosis: 'Deviated septum — conservative', notes: 'Demo ENT consult.',
     },
-    moon && {
-      doctor: moon, phone: '9100000004', time: '10:40', apptStatus: 'checked_in', token: 3, tokenStatus: 'waiting',
+    nair && {
+      doctor: nair, phone: '9100000004', time: '10:40', apptStatus: 'checked_in', token: 3, tokenStatus: 'waiting',
       bookedVia: 'website',
     },
-    moon && {
-      doctor: moon, phone: '9100000014', time: '11:00', apptStatus: 'checked_in', token: 4, tokenStatus: 'waiting',
+    nair && {
+      doctor: nair, phone: '9100000014', time: '11:00', apptStatus: 'checked_in', token: 4, tokenStatus: 'waiting',
       bookedVia: 'walk_in',
     },
-    kolhe && {
-      doctor: kolhe, phone: '9100000012', time: '11:00', apptStatus: 'checked_in', token: 1, tokenStatus: 'called',
+    kapoor && {
+      doctor: kapoor, phone: '9100000012', time: '11:00', apptStatus: 'checked_in', token: 1, tokenStatus: 'called',
       bookedVia: 'website',
     },
-    kolhe && {
-      doctor: kolhe, phone: '9100000005', time: '11:20', apptStatus: 'checked_in', token: 2, tokenStatus: 'waiting',
+    kapoor && {
+      doctor: kapoor, phone: '9100000005', time: '11:20', apptStatus: 'checked_in', token: 2, tokenStatus: 'waiting',
       bookedVia: 'phone',
     },
-    kolhe && {
-      doctor: kolhe, phone: '9100000009', time: '11:40', apptStatus: 'checked_in', token: 3, tokenStatus: 'waiting',
+    kapoor && {
+      doctor: kapoor, phone: '9100000009', time: '11:40', apptStatus: 'checked_in', token: 3, tokenStatus: 'waiting',
       bookedVia: 'walk_in',
     },
-    lodhi && {
-      doctor: lodhi, phone: '9100000013', time: '17:00', apptStatus: 'checked_in', token: 1, tokenStatus: 'waiting',
+    roy && {
+      doctor: roy, phone: '9100000013', time: '17:00', apptStatus: 'checked_in', token: 1, tokenStatus: 'waiting',
       bookedVia: 'phone',
     },
-    lodhi && {
-      doctor: lodhi, phone: '9100000006', time: '17:20', apptStatus: 'checked_in', token: 2, tokenStatus: 'waiting',
+    roy && {
+      doctor: roy, phone: '9100000006', time: '17:20', apptStatus: 'checked_in', token: 2, tokenStatus: 'waiting',
       bookedVia: 'website',
     },
-    khandait && {
-      doctor: khandait, phone: '9100000007', time: '19:00', apptStatus: 'in_consultation', token: 1, tokenStatus: 'in_consultation',
+    sen && {
+      doctor: sen, phone: '9100000007', time: '19:00', apptStatus: 'in_consultation', token: 1, tokenStatus: 'in_consultation',
       bookedVia: 'walk_in', complaint: 'Migraine follow-up', diagnosis: 'Migraine without aura', notes: 'Demo neuro consult.',
     },
-    khandait && {
-      doctor: khandait, phone: '9100000015', time: '19:20', apptStatus: 'checked_in', token: 2, tokenStatus: 'waiting',
+    sen && {
+      doctor: sen, phone: '9100000015', time: '19:20', apptStatus: 'checked_in', token: 2, tokenStatus: 'waiting',
       bookedVia: 'phone',
     },
   ].filter(Boolean);
@@ -491,44 +499,44 @@ export async function seedDemoData(pool) {
 
   // ── FUTURE appointments ──
   await insertAppointment(pool, {
-    patientId: p('9100000014'), doctorId: maske.id, date: daysAhead(1), time: '09:00',
+    patientId: p('9100000014'), doctorId: sharma.id, date: daysAhead(1), time: '09:00',
     status: 'confirmed', bookedVia: 'website',
   });
   await insertAppointment(pool, {
-    patientId: p('9100000015'), doctorId: maske.id, date: daysAhead(3), time: '10:30',
+    patientId: p('9100000015'), doctorId: sharma.id, date: daysAhead(3), time: '10:30',
     status: 'pending', bookedVia: 'website',
   });
-  if (moon) {
+  if (nair) {
     await insertAppointment(pool, {
-      patientId: p('9100000001'), doctorId: moon.id, date: daysAhead(2), time: '11:00',
+      patientId: p('9100000001'), doctorId: nair.id, date: daysAhead(2), time: '11:00',
       status: 'confirmed', bookedVia: 'phone',
     });
   }
 
   // ── 15-day rolling history + upcoming bookings (one per doctor per day) ──
-  const doctorList = [maske, moon, kolhe, khandait, lodhi].filter(Boolean);
+  const doctorList = [sharma, nair, kapoor, sen, roy].filter(Boolean);
   const caseBank = {
-    [maske?.id]: [
+    [sharma?.id]: [
       { complaint: 'Chest tightness on exertion', diagnosis: 'Stable angina — on medical management', rx: RX_ITEMS_CARDIO },
       { complaint: 'Palpitations', diagnosis: 'Benign PVCs — reassured', rx: RX_ITEMS_CARDIO.slice(0, 2) },
       { complaint: 'Hypertension follow-up', diagnosis: 'Essential hypertension — controlled', rx: RX_ITEMS_CARDIO.slice(0, 1) },
       { complaint: 'Breathlessness on exertion', diagnosis: 'Mild LV dysfunction — stable', rx: RX_ITEMS_CARDIO },
     ],
-    [moon?.id]: [
+    [nair?.id]: [
       { complaint: 'Chronic sinusitis', diagnosis: 'Allergic rhinitis with sinusitis', rx: RX_ITEMS_ENT },
       { complaint: 'Ear pain', diagnosis: 'Otitis media — resolving', rx: RX_ITEMS_ENT },
       { complaint: 'Nasal blockage', diagnosis: 'Deviated septum — conservative', rx: RX_ITEMS_ENT.slice(0, 1) },
     ],
-    [kolhe?.id]: [
+    [kapoor?.id]: [
       { complaint: 'Knee pain', diagnosis: 'OA knee bilateral', rx: RX_ITEMS_ORTHO },
       { complaint: 'Lower back pain', diagnosis: 'Lumbar spondylosis', rx: RX_ITEMS_ORTHO },
       { complaint: 'Shoulder stiffness', diagnosis: 'Frozen shoulder — improving', rx: RX_ITEMS_ORTHO.slice(0, 1) },
     ],
-    [khandait?.id]: [
+    [sen?.id]: [
       { complaint: 'Migraine', diagnosis: 'Migraine without aura', rx: RX_ITEMS_NEURO },
       { complaint: 'Recurrent headache', diagnosis: 'Tension-type headache', rx: RX_ITEMS_NEURO },
     ],
-    [lodhi?.id]: [
+    [roy?.id]: [
       { complaint: 'Antenatal visit', diagnosis: 'Routine antenatal check-up', rx: RX_ITEMS_GYNAE },
       { complaint: 'Irregular periods', diagnosis: 'PCOS — on management', rx: RX_ITEMS_GYNAE.slice(0, 1) },
     ],
@@ -585,11 +593,11 @@ export async function seedDemoData(pool) {
 
   // ── Pending payment demo ──
   const pendingPayAppt = await insertAppointment(pool, {
-    patientId: p('9100000008'), doctorId: maske.id, date: daysAgo(1), time: '16:00',
+    patientId: p('9100000008'), doctorId: sharma.id, date: daysAgo(1), time: '16:00',
     status: 'completed', bookedVia: 'walk_in',
   });
   await insertPayment(pool, {
-    appointmentId: pendingPayAppt, amount: maske.consultation_fee,
+    appointmentId: pendingPayAppt, amount: sharma.consultation_fee,
     method: 'cash', status: 'pending', recordedBy: null,
   });
 
@@ -613,7 +621,7 @@ export async function seedDemoData(pool) {
   console.log('Demo data seeded:');
   console.log(`  • ${DEMO_PATIENTS.length} patients (phones 9100000001–9100000015)`);
   console.log(`  • Today: every active appointment is also in the OPD queue (cancelled/no-show excluded)`);
-  console.log(`  • Dr Maske tokens #1–#8; ENT / Ortho / Gynae / Neuro also have live queues`);
+  console.log(`  • Dr Sharma tokens #1–#8; ENT / Ortho / Gynae / Neuro also have live queues`);
   console.log(`  • Pharmacy: 2 pending Rx (Priya + ENT patient), 1 dispensed`);
   console.log(`  • Future bookings, payments (cash/UPI/card), medicine templates`);
   console.log(`  • ${rollingCount.past} completed visits over the last 15 days, ${rollingCount.future} upcoming bookings over the next 15 days`);

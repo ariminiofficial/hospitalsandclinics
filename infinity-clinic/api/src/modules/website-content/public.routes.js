@@ -39,8 +39,8 @@ router.get('/doctors', async (req, res, next) => {
 router.get('/services', async (req, res, next) => {
   try {
     const { rows } = await query(
-      `SELECT id, title, description, icon FROM services
-       WHERE is_published = true ORDER BY sort_order, title`
+      `SELECT id, title, description, price, category, duration_minutes, icon FROM services
+       WHERE is_published = true AND is_active = true ORDER BY category, sort_order, title`
     );
     res.json(rows);
   } catch (err) {

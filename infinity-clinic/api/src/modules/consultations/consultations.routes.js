@@ -170,7 +170,13 @@ router.get('/:consultationId', async (req, res, next) => {
       [req.params.consultationId]
     );
     if (!rows[0]) throw new AppError('Consultation not found', 404, 'NOT_FOUND');
-    res.json(rows[0]);
+
+    const { rows: services } = await query(
+      `SELECT * FROM appointment_services WHERE appointment_id = $1 ORDER BY created_at ASC`,
+      [rows[0].appointment_id]
+    );
+
+    res.json({ ...rows[0], services });
   } catch (err) {
     next(err);
   }
@@ -189,7 +195,26 @@ router.put('/:consultationId', requirePermission('consultations.notes'), async (
       [data.chiefComplaint, data.diagnosis, data.notes, req.params.consultationId]
     );
     if (!rows[0]) throw new AppError('Consultation not found', 404, 'NOT_FOUND');
-    res.json(rows[0]);
+
+    if (Array.isArray(data.services)) {
+      await query(`DELETE FROM appointment_services WHERE appointment_id = $1`, [rows[0].appointment_id]);
+      for (const s of data.services) {
+        if (s.serviceName?.trim()) {
+          await query(
+            `INSERT INTO appointment_services (appointment_id, service_id, service_name, price, quantity, notes)
+             VALUES ($1, $2, $3, $4, $5, $6)`,
+            [rows[0].appointment_id, s.serviceId || null, s.serviceName, s.price ?? 0, s.quantity || 1, s.notes || null]
+          );
+        }
+      }
+    }
+
+    const { rows: services } = await query(
+      `SELECT * FROM appointment_services WHERE appointment_id = $1 ORDER BY created_at ASC`,
+      [rows[0].appointment_id]
+    );
+
+    res.json({ ...rows[0], services });
   } catch (err) {
     if (err instanceof z.ZodError) return next(new AppError('Invalid input', 400, 'VALIDATION_ERROR'));
     next(err);

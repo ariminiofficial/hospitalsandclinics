@@ -1,0 +1,2515 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clinixa — Your Clinic Companion | by Arimini</title>
+  <meta name="description" content="Clinixa: Your Clinic Companion. One connected OPD system for modern clinics and polyclinics. Connects patient booking, reception tokens, live queue, doctor EMR, digital prescriptions, pharmacy, and billing.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <!-- EmailJS Browser SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <style>
+    :root {
+      /* Brand Color Palette */
+      --indigo: #4F46E5;
+      --indigo-hover: #4338CA;
+      --indigo-deep: #312E81;
+      --indigo-pale: #EEF2FF;
+      --indigo-glow: rgba(79, 70, 229, 0.18);
+      
+      --cyan: #06B6D4;
+      --teal: #0D9488;
+      --emerald: #10B981;
+      --emerald-pale: #ECFDF5;
+      --amber: #F59E0B;
+      --rose: #F43F5E;
+      --arimini-purple: #8B5CF6;
+      --arimini-blue: #6366F1;
+
+      /* Neutrals & Surfaces */
+      --ink: #0B1120;
+      --ink-soft: #475569;
+      --ink-muted: #64748B;
+      --paper: #FFFFFF;
+      --paper-alt: #F8FAFC;
+      --paper-subtle: #F1F5F9;
+      --line: #E2E8F0;
+      --line-soft: #EDF2F7;
+      
+      /* Dark Surface Tokens (Console / Security) */
+      --dark-bg: #0B1120;
+      --dark-card: #111827;
+      --dark-card-inner: #1E293B;
+      --dark-border: rgba(255, 255, 255, 0.09);
+      --dark-line: rgba(255, 255, 255, 0.06);
+
+      /* Typography */
+      --heading-font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: 'JetBrains Mono', 'SFMono-Regular', monospace;
+      
+      /* Shadows & Radii */
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07);
+      --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+      --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
+      --shadow-console: 0 25px 60px -15px rgba(11, 17, 32, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background: var(--paper);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.55;
+      overflow-x: hidden;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--indigo);
+      outline-offset: 3px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 28px;
+    }
+
+    section {
+      padding: 96px 0;
+      position: relative;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: var(--heading-font);
+      margin: 0;
+      letter-spacing: -0.025em;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    /* NAVIGATION */
+    header.site {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .nav {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--ink);
+    }
+
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--indigo) 0%, #6366F1 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 16px;
+      box-shadow: 0 4px 10px var(--indigo-glow);
+    }
+
+    .brand .mark {
+      font-family: var(--heading-font);
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+    }
+
+    .arimini-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      padding: 3px 9px 3px 6px;
+      border-radius: 20px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .arimini-badge:hover {
+      background: rgba(99, 102, 241, 0.14);
+      border-color: rgba(99, 102, 241, 0.35);
+    }
+
+    .arimini-badge svg.bolt {
+      width: 14px;
+      height: 14px;
+      display: block;
+    }
+
+    .arimini-badge span.text {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #8B5CF6 0%, #6366F1 50%, #06B6D4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 0.01em;
+    }
+
+    nav.links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    nav.links a {
+      text-decoration: none;
+      color: var(--ink-soft);
+      transition: color .15s ease;
+      position: relative;
+    }
+
+    nav.links a:hover {
+      color: var(--indigo);
+    }
+
+    .nav-cta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* BUTTONS */
+    .btn {
+      font-family: var(--sans);
+      font-size: 13.5px;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border: 1px solid transparent;
+      transition: all .16s ease;
+      line-height: 1.2;
+    }
+
+    .btn-ghost {
+      border-color: var(--line);
+      background: var(--paper);
+      color: var(--ink);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--ink-soft);
+      background: var(--paper-alt);
+      color: var(--ink);
+    }
+
+    .btn-solid {
+      background: linear-gradient(180deg, var(--indigo) 0%, #4338CA 100%);
+      color: #fff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 12px var(--indigo-glow);
+    }
+
+    .btn-solid:hover {
+      background: linear-gradient(180deg, #4338CA 0%, var(--indigo-deep) 100%);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 6px 16px rgba(79, 70, 229, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-lg {
+      padding: 13px 24px;
+      font-size: 15px;
+      border-radius: 10px;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    @media(max-width:920px) {
+      nav.links {
+        display: none;
+      }
+    }
+
+    /* HERO SECTION */
+    .hero {
+      padding: 72px 0 60px;
+      background: radial-gradient(circle at 50% -10%, rgba(79, 70, 229, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+      position: relative;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 52px;
+      align-items: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--indigo-deep);
+      background: var(--indigo-pale);
+      border: 1px solid rgba(79, 70, 229, 0.2);
+      padding: 6px 14px;
+      border-radius: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 6px rgba(79, 70, 229, 0.06);
+    }
+
+    .badge .d {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+      animation: pulseGlow 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+    }
+
+    .hero-quote {
+      font-family: var(--mono);
+      font-size: 13.5px;
+      color: var(--ink-soft);
+      border-left: 3px solid var(--indigo);
+      padding-left: 14px;
+      margin-bottom: 20px;
+      line-height: 1.5;
+      background: rgba(79, 70, 229, 0.03);
+      border-radius: 0 6px 6px 0;
+      padding-top: 6px;
+      padding-bottom: 6px;
+    }
+
+    .hero-quote span {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .queue-question {
+      display: inline-block;
+      color: var(--indigo-deep);
+      min-width: 14ch;
+      transition: opacity .25s ease, transform .25s ease;
+      will-change: opacity, transform;
+    }
+
+    .queue-question.is-changing {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+
+    h1.display {
+      font-size: 46px;
+      line-height: 1.12;
+      letter-spacing: -0.03em;
+      margin-bottom: 18px;
+      color: var(--ink);
+    }
+
+    h1.display .highlight {
+      background: linear-gradient(135deg, var(--indigo) 0%, #7C3AED 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-sub {
+      font-size: 16.5px;
+      color: var(--ink-soft);
+      margin: 0 0 28px;
+      line-height: 1.65;
+    }
+
+    .hero-flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin: 0 0 30px;
+    }
+
+    .hero-flow span {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      background: var(--paper);
+      padding: 6px 10px;
+      border-radius: 6px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .hero-flow i {
+      font-style: normal;
+      color: var(--indigo);
+      font-weight: 700;
+      font-size: 12px;
+      padding: 0 2px;
+    }
+
+    .hero-ctas {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .segments {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .seg {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink-soft);
+      border: 1px solid var(--line);
+      background: var(--paper-alt);
+      padding: 5px 12px;
+      border-radius: 20px;
+      transition: all 0.15s ease;
+    }
+
+    .seg:hover {
+      background: var(--indigo-pale);
+      border-color: rgba(79, 70, 229, 0.3);
+      color: var(--indigo-deep);
+    }
+
+    /* CONSOLE PANEL */
+    .console {
+      background: var(--dark-bg);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-console);
+      border: 1px solid var(--dark-border);
+      position: relative;
+    }
+
+    .console::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    }
+
+    .console-bar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 12px 16px;
+      background: rgba(17, 24, 39, 0.7);
+      border-bottom: 1px solid var(--dark-line);
+    }
+
+    .console-bar .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .console-bar .dot.red { background: #EF4444; }
+    .console-bar .dot.yellow { background: #F59E0B; }
+    .console-bar .dot.green { background: #10B981; }
+
+    .console-bar .tag {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--emerald);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.1);
+      padding: 3px 9px;
+      border-radius: 12px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .console-bar .tag::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--emerald);
+    }
+
+    .console-body {
+      padding: 22px;
+    }
+
+    .c-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--dark-line);
+    }
+
+    .c-row:last-child {
+      border-bottom: none;
+    }
+
+    .c-row .l {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      color: #94A3B8;
+    }
+
+    .c-row .r {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      color: #F8FAFC;
+      font-weight: 500;
+    }
+
+    .c-row .r.hl {
+      color: #34D399;
+      background: rgba(52, 211, 153, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .c-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      margin-top: 18px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .c-stat {
+      background: var(--dark-card);
+      padding: 14px 12px;
+      text-align: center;
+    }
+
+    .c-stat b {
+      display: block;
+      font-family: var(--mono);
+      font-size: 20px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .c-stat span {
+      font-size: 11px;
+      color: #94A3B8;
+    }
+
+    .c-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 14px 22px 16px;
+      border-top: 1px solid var(--dark-line);
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .c-pill {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #94A3B8;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    @media(max-width:920px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      h1.display {
+        font-size: 34px;
+      }
+    }
+
+    /* SECTION HEADINGS */
+    .sec-head {
+      max-width: 680px;
+      margin-bottom: 48px;
+    }
+
+    .sec-tag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--indigo);
+      letter-spacing: 0.06em;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      background: var(--indigo-pale);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .sec-head h2 {
+      font-size: 32px;
+      line-height: 1.2;
+      color: var(--ink);
+    }
+
+    .sec-head p {
+      color: var(--ink-soft);
+      font-size: 16px;
+      margin-top: 14px;
+      line-height: 1.6;
+    }
+
+    /* PROBLEM / SOLUTION */
+    .patchwork {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .patch-card {
+      padding: 36px;
+      background: var(--paper-alt);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .patch-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .patch-card.solution {
+      background: linear-gradient(145deg, #EEF2FF 0%, #E0E7FF 100%);
+      border-color: #C7D2FE;
+      box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.12);
+    }
+
+    .patch-card h3 {
+      font-size: 22px;
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .patch-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .patch-item {
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 14px;
+      background: var(--paper);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .patch-card:not(.solution) .patch-item::before {
+      content: "✕";
+      color: var(--rose);
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .patch-card.solution .patch-item {
+      border-color: rgba(79, 70, 229, 0.2);
+    }
+
+    .patch-card.solution .patch-item::before {
+      content: "✓";
+      color: var(--emerald);
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    @media(max-width:768px) {
+      .patchwork {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* HONESTY & STATS BAND */
+    .honest {
+      background: var(--paper-alt);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .honest .wrap {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 56px;
+      align-items: center;
+    }
+
+    .honest h2 {
+      font-size: 28px;
+      line-height: 1.25;
+    }
+
+    .honest p {
+      color: var(--ink-soft);
+      font-size: 15.5px;
+      margin-top: 14px;
+      line-height: 1.65;
+    }
+
+    .h-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .h-stat {
+      background: var(--paper);
+      padding: 22px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .h-stat b {
+      display: block;
+      font-size: 28px;
+      font-family: var(--mono);
+      font-weight: 700;
+      color: var(--indigo);
+      margin-bottom: 4px;
+    }
+
+    .h-stat span {
+      font-size: 13px;
+      color: var(--ink-soft);
+      line-height: 1.4;
+    }
+
+    @media(max-width:920px) {
+      .honest .wrap {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+    }
+
+    /* PROCESS (Workflow Sequence) */
+    .process-list {
+      border-top: 1px solid var(--line);
+    }
+
+    .p-step {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 24px;
+      padding: 28px 0;
+      border-bottom: 1px solid var(--line);
+      align-items: start;
+    }
+
+    .p-step .pn {
+      font-family: var(--mono);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--indigo);
+      background: var(--indigo-pale);
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(79, 70, 229, 0.2);
+    }
+
+    .p-step h4 {
+      font-size: 17px;
+      font-weight: 700;
+      margin: 0 0 6px;
+      color: var(--ink);
+    }
+
+    .p-step p {
+      font-size: 14.5px;
+      color: var(--ink-soft);
+      margin: 0;
+      max-width: 65ch;
+      line-height: 1.6;
+    }
+
+    @media(max-width:700px) {
+      .p-step {
+        grid-template-columns: 50px 1fr;
+        gap: 16px;
+      }
+      .p-step .pn {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+      }
+    }
+
+    /* FEATURE GRID */
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .feat {
+      background: var(--paper);
+      padding: 28px 24px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+
+    .feat:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: #CBD5E1;
+    }
+
+    .feat h4 {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0 0 8px;
+      line-height: 1.35;
+    }
+
+    .feat p {
+      font-size: 13.5px;
+      color: var(--ink-soft);
+      margin: 0;
+      line-height: 1.55;
+    }
+
+    @media(max-width:920px) {
+      .feat-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media(max-width:560px) {
+      .feat-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* WHY CLINIXA */
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .why-card {
+      background: var(--paper);
+      padding: 28px 22px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+
+    .why-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: rgba(79, 70, 229, 0.3);
+    }
+
+    .why-card .num {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--indigo);
+      margin-bottom: 16px;
+      background: var(--indigo-pale);
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .why-card h4 {
+      font-size: 16px;
+      margin: 0 0 8px;
+    }
+
+    .why-card p {
+      font-size: 13.5px;
+      color: var(--ink-soft);
+      margin: 0;
+      line-height: 1.55;
+    }
+
+    /* MODULES */
+    .module {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 56px;
+      align-items: center;
+      padding: 56px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .module:last-of-type {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .module.rev {
+      grid-template-columns: 1.05fr 0.95fr;
+    }
+
+    .module.rev .m-visual {
+      order: 2;
+    }
+
+    .module.rev .m-text {
+      order: 1;
+    }
+
+    .m-text .m-index {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--indigo);
+      margin-bottom: 12px;
+      display: block;
+      letter-spacing: 0.04em;
+    }
+
+    .m-text h3 {
+      font-size: 24px;
+      margin-bottom: 14px;
+      line-height: 1.25;
+    }
+
+    .m-text p {
+      color: var(--ink-soft);
+      font-size: 15px;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .m-text ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .m-text li {
+      font-size: 14px;
+      color: var(--ink);
+      padding: 10px 0 10px 22px;
+      position: relative;
+      border-top: 1px solid var(--line-soft);
+      font-weight: 500;
+    }
+
+    .m-text li:first-child {
+      border-top: none;
+    }
+
+    .m-text li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 18px;
+      width: 8px;
+      height: 2px;
+      background: var(--indigo);
+      border-radius: 2px;
+    }
+
+    .m-visual {
+      background: var(--dark-bg);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      min-height: 220px;
+      color: #F8FAFC;
+      border: 1px solid var(--dark-border);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .m-visual .vh {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: #94A3B8;
+      margin-bottom: 14px;
+      display: block;
+      letter-spacing: 0.05em;
+    }
+
+    .m-visual .vline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13.5px;
+      padding: 10px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      color: #E2E8F0;
+    }
+
+    .m-visual .vline:first-of-type {
+      border-top: none;
+    }
+
+    .m-visual .vline .val {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #34D399;
+      background: rgba(52, 211, 153, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    @media(max-width:920px) {
+      .module,
+      .module.rev {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+
+      .module.rev .m-visual,
+      .module.rev .m-text {
+        order: initial;
+      }
+    }
+
+    /* TARGET AUDIENCE */
+    .audience-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+    }
+
+    .aud-card {
+      background: var(--paper);
+      padding: 24px 18px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+
+    .aud-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: rgba(79, 70, 229, 0.3);
+    }
+
+    .aud-card h4 {
+      font-size: 15px;
+      margin: 0 0 8px;
+      color: var(--ink);
+    }
+
+    .aud-card p {
+      font-size: 13px;
+      color: var(--ink-soft);
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    @media(max-width:920px) {
+      .why-grid,
+      .audience-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media(max-width:560px) {
+      .why-grid,
+      .audience-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* DATA & SECURITY */
+    .security {
+      background: var(--dark-bg);
+      color: #F8FAFC;
+    }
+
+    .security .sec-tag {
+      color: var(--cyan);
+      background: rgba(6, 182, 212, 0.15);
+    }
+
+    .security .sec-head h2 {
+      color: #FFFFFF;
+    }
+
+    .security .sec-head p {
+      color: #94A3B8;
+    }
+
+    .security-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .security-card {
+      background: var(--dark-card);
+      padding: 26px 22px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--dark-border);
+    }
+
+    .security-card h4 {
+      font-size: 15px;
+      color: #FFFFFF;
+      margin: 0 0 8px;
+    }
+
+    .security-card p {
+      font-size: 13px;
+      color: #94A3B8;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    @media(max-width:920px) {
+      .security-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media(max-width:560px) {
+      .security-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* PRICING */
+    .flat-notes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .flat-note {
+      background: var(--paper-alt);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+      font-size: 13px;
+      color: var(--ink-soft);
+      line-height: 1.5;
+    }
+
+    .flat-note b {
+      color: var(--ink);
+      font-weight: 700;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    @media(max-width:850px) {
+      .flat-notes-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .price-tables {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    table.plans {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    table.plans caption {
+      text-align: left;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--indigo);
+      margin-bottom: 14px;
+      caption-side: top;
+      letter-spacing: 0.05em;
+    }
+
+    table.plans th,
+    table.plans td {
+      padding: 16px 20px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    table.plans thead th {
+      font-weight: 700;
+      font-size: 17px;
+      background: var(--paper-alt);
+      border-bottom: 2px solid var(--line);
+    }
+
+    table.plans thead th .price {
+      display: block;
+      font-family: var(--heading-font);
+      font-weight: 800;
+      font-size: 22px;
+      margin-top: 8px;
+      color: var(--indigo);
+    }
+
+    table.plans thead th .price small {
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink-soft);
+    }
+
+    table.plans thead th:first-child,
+    table.plans tbody th {
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--ink-soft);
+      width: 24%;
+      background: var(--paper-alt);
+    }
+
+    table.plans tbody tr:last-child td,
+    table.plans tbody tr:last-child th {
+      border-bottom: none;
+    }
+
+    table.plans th.col-featured,
+    table.plans td.col-featured {
+      background: rgba(79, 70, 229, 0.03);
+      border-left: 1.5px solid rgba(79, 70, 229, 0.3);
+      border-right: 1.5px solid rgba(79, 70, 229, 0.3);
+    }
+
+    table.plans thead th.col-featured {
+      background: var(--indigo-pale);
+      border-top: 3px solid var(--indigo);
+    }
+
+    table.plans td.yes::before {
+      content: "✓ ";
+      color: var(--emerald);
+      font-weight: 800;
+      margin-right: 2px;
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+      border-radius: var(--radius-lg);
+    }
+
+    @media(max-width:800px) {
+      table.plans {
+        min-width: 640px;
+      }
+    }
+
+    /* FAQ ACCORDION */
+    .faq {
+      max-width: 780px;
+    }
+
+    details {
+      border-top: 1px solid var(--line);
+      padding: 20px 0;
+      transition: all 0.2s ease;
+    }
+
+    details:last-of-type {
+      border-bottom: 1px solid var(--line);
+    }
+
+    summary {
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--heading-font);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ink);
+      user-select: none;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    summary::after {
+      content: "+";
+      font-family: var(--mono);
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--indigo);
+      transition: transform 0.2s ease;
+    }
+
+    details[open] summary::after {
+      content: "–";
+    }
+
+    details p {
+      margin: 12px 0 0;
+      color: var(--ink-soft);
+      font-size: 14.5px;
+      max-width: 65ch;
+      line-height: 1.65;
+    }
+
+    /* CONTACT & LEAD INTEGRATION SECTION */
+    .contact-section {
+      background: var(--paper-alt);
+      border-top: 1px solid var(--line);
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 52px;
+      align-items: start;
+    }
+
+    .contact-card-glass {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 36px 32px;
+      box-shadow: var(--shadow-xl);
+      position: relative;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .form-label .req {
+      color: var(--rose);
+      margin-left: 2px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 14px;
+      font-family: var(--sans);
+      font-size: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      color: var(--ink);
+      transition: all 0.15s ease;
+    }
+
+    .form-control:focus {
+      border-color: var(--indigo);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+
+    .form-control::placeholder {
+      color: #94A3B8;
+    }
+
+    select.form-control {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 38px;
+    }
+
+    .contact-opt-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      margin-bottom: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .contact-opt-item:hover {
+      border-color: rgba(79, 70, 229, 0.4);
+      transform: translateX(4px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .contact-opt-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .contact-badges {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .contact-badge-item {
+      padding: 16px 14px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .contact-badge-item b {
+      display: block;
+      font-family: var(--heading-font);
+      font-size: 20px;
+      color: var(--indigo);
+    }
+
+    .contact-badge-item span {
+      font-size: 11.5px;
+      color: var(--ink-soft);
+    }
+
+    .form-success-card {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .success-icon-wrap {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--emerald-pale);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 28px;
+      color: var(--emerald);
+    }
+
+    .form-error-banner {
+      background: #FEF2F2;
+      border: 1px solid #FCA5A5;
+      color: #991B1B;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      margin-bottom: 16px;
+    }
+
+    @media(max-width:920px) {
+      .contact-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+      .form-row-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* CTA BANNER */
+    .cta-band {
+      background: linear-gradient(135deg, var(--indigo) 0%, #3730A3 100%);
+      color: #fff;
+      border-radius: var(--radius-xl);
+      padding: 56px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 32px;
+      flex-wrap: wrap;
+      box-shadow: 0 20px 40px -10px rgba(79, 70, 229, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-band::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-band h3 {
+      font-size: 28px;
+      color: #fff;
+      max-width: 22ch;
+      line-height: 1.25;
+    }
+
+    .cta-band p {
+      font-size: 14.5px;
+      color: #E0E7FF;
+      margin: 10px 0 0;
+    }
+
+    .cta-band .btn-solid {
+      background: #FFFFFF;
+      color: var(--indigo-deep);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .cta-band .btn-solid:hover {
+      background: #F1F5F9;
+      transform: translateY(-1px);
+    }
+
+    .cta-band .btn-ghost {
+      border-color: rgba(255, 255, 255, 0.4);
+      background: transparent;
+      color: #FFFFFF;
+    }
+
+    .cta-band .btn-ghost:hover {
+      border-color: #FFFFFF;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 64px 0 36px;
+      background: var(--paper);
+    }
+
+    .foot-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 48px;
+    }
+
+    .foot-brand p {
+      font-size: 13.5px;
+      color: var(--ink-soft);
+      max-width: 32ch;
+      margin-top: 12px;
+      line-height: 1.6;
+    }
+
+    .foot-col h5 {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ink-soft);
+      margin: 0 0 16px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .foot-col a {
+      display: block;
+      font-size: 13.5px;
+      color: var(--ink);
+      text-decoration: none;
+      margin-bottom: 10px;
+      transition: color 0.15s ease;
+    }
+
+    .foot-col a:hover {
+      color: var(--indigo);
+    }
+
+    .foot-bottom {
+      border-top: 1px solid var(--line);
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--ink-soft);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .foot-bottom a {
+      color: var(--indigo);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .foot-bottom a:hover {
+      text-decoration: underline;
+    }
+
+    @media(max-width:800px) {
+      .foot-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="site">
+    <div class="nav">
+      <a href="#top" class="brand">
+        <div class="brand-icon">CX</div>
+        <div style="display:flex;flex-direction:column;line-height:1.15;">
+          <span class="mark" style="font-size:19px;">Clinixa</span>
+          <span style="font-size:10px;font-weight:600;color:var(--indigo);letter-spacing:0.03em;text-transform:uppercase;">Your Clinic Companion</span>
+        </div>
+        <a href="https://www.arimini.in" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;padding:3px 8px;border-radius:8px;background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.18);transition:all 0.15s ease;" title="Engineered by Arimini">
+          <span style="font-size:11px;font-weight:600;color:var(--ink-soft);">by</span>
+          <img src="assets/arimini.png" alt="Arimini" style="height:19px;width:auto;display:block;" onerror="this.src='assets/arimini-logo.svg'">
+        </a>
+      </a>
+      <nav class="links">
+        <a href="#how-it-works">How it works</a>
+        <a href="#platform">Platform</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <div class="nav-cta">
+        <a href="#contact" class="btn btn-ghost">Talk to Us</a>
+        <a href="#contact" class="btn btn-solid">Book 15-Min Demo</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="wrap">
+        <div class="hero-grid">
+          <div>
+            <span class="badge"><span class="d"></span>Clinixa — Your Clinic Companion · Onboarding Clinics</span>
+            <p class="hero-quote">"<span id="queue-question" class="queue-question">Abhi number kab aayega?</span>" —
+              the question your front desk shouldn’t have to answer all day.</p>
+            <h1 class="display">The OPD system that connects your <span class="highlight">entire clinic</span>.</h1>
+            <p class="hero-sub">One patient record connects booking, reception, live queue, consultation, prescription,
+              pharmacy and billing — so your staff stop switching between disconnected tools.</p>
+            <div class="hero-flow" aria-label="Clinixa workflow">
+              <span>Booking</span><i>→</i><span>Token</span><i>→</i><span>Queue</span><i>→</i><span>Consult</span><i>→</i><span>Prescription</span><i>→</i><span>Pharmacy</span>
+            </div>
+            <div class="hero-ctas">
+              <a href="#contact" class="btn btn-solid btn-lg">Book a Live 15-Min Demo</a>
+              <a href="#contact" class="btn btn-ghost btn-lg">Talk to Us</a>
+            </div>
+            <div class="segments">
+              <span class="seg">Solo GP clinics</span>
+              <span class="seg">Polyclinics</span>
+              <span class="seg">Dental &amp; specialty</span>
+              <span class="seg">Diagnostic centres</span>
+              <span class="seg">Multi-branch chains</span>
+            </div>
+          </div>
+
+          <div class="console" aria-hidden="true">
+            <div class="console-bar">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+              <span class="tag">DEMO QUEUE</span>
+            </div>
+            <div class="console-body">
+              <div class="c-row"><span class="l">token_called</span><span class="r hl">A19 → Room 2</span></div>
+              <div class="c-row"><span class="l">next_up</span><span class="r">A20, A21</span></div>
+              <div class="c-row"><span class="l">whatsapp_sent</span><span class="r">"2 patients ahead of you"</span></div>
+              <div class="c-row"><span class="l">avg_wait</span><span class="r">6 min</span></div>
+              <div class="c-stats">
+                <div class="c-stat"><b>42</b><span>checked in today</span></div>
+                <div class="c-stat"><b>1</b><span>no-show</span></div>
+                <div class="c-stat"><b>0</b><span>double-booked slots</span></div>
+              </div>
+            </div>
+            <div class="c-pills">
+              <span class="c-pill">React</span>
+              <span class="c-pill">Node.js</span>
+              <span class="c-pill">PostgreSQL</span>
+              <span class="c-pill">WebSockets</span>
+              <span class="c-pill">WhatsApp API</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROBLEM / SOLUTION -->
+    <section>
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="sec-tag">THE PROBLEM</span>
+          <h2>Your clinic isn't running on one system.</h2>
+          <p>When every desk uses a different process, small delays turn into repeated calls, duplicate entries and paperwork.</p>
+        </div>
+        <div class="patchwork">
+          <div class="patch-card">
+            <h3>The patchwork</h3>
+            <div class="patch-list">
+              <div class="patch-item">Phone calls asking when the token will come</div>
+              <div class="patch-item">Paper tokens moving between desks</div>
+              <div class="patch-item">Manual WhatsApp messages</div>
+              <div class="patch-item">Prescription slips reaching the pharmacy late</div>
+              <div class="patch-item">Separate spreadsheets and billing workflows</div>
+            </div>
+          </div>
+          <div class="patch-card solution">
+            <h3>One connected workflow</h3>
+            <div class="patch-list">
+              <div class="patch-item">Patient books and receives an appointment ID</div>
+              <div class="patch-item">Reception checks in and issues the token</div>
+              <div class="patch-item">Patient sees queue status and receives updates</div>
+              <div class="patch-item">Doctor completes consultation and prescription</div>
+              <div class="patch-item">Pharmacy and billing receive the same record</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRUST -->
+    <section class="honest">
+      <div class="wrap">
+        <div>
+          <h2>Built around the real OPD workflow.</h2>
+          <p>Clinixa follows the way a patient actually moves through a clinic — from booking and check-in to consultation, prescription, pharmacy and billing.</p>
+        </div>
+        <div class="h-stats">
+          <div class="h-stat"><b>1</b><span>patient record across the workflow</span></div>
+          <div class="h-stat"><b>5</b><span>core stages from booking to pharmacy</span></div>
+          <div class="h-stat"><b>0</b><span>per-appointment fees</span></div>
+          <div class="h-stat"><b>24×7</b><span>support availability on paid plans</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how-it-works">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="sec-tag">THE PATIENT VISIT</span>
+          <h2>Everything a visit touches, on one record.</h2>
+          <p>Nothing gets re-typed at the next desk, and nothing gets carried between counters on a slip of paper.</p>
+        </div>
+        <div class="process-list">
+          <div class="p-step">
+            <span class="pn">01</span>
+            <div>
+              <h4>Booking</h4>
+              <p>Patient picks a doctor and a genuinely open slot on your website — no double-booking two patients into the same 10 o'clock.</p>
+            </div>
+          </div>
+          <div class="p-step">
+            <span class="pn">02</span>
+            <div>
+              <h4>Check-in &amp; token</h4>
+              <p>Reception registers a walk-in with just a name and phone number; returning patients are matched automatically, and a token is issued.</p>
+            </div>
+          </div>
+          <div class="p-step">
+            <span class="pn">03</span>
+            <div>
+              <h4>Live queue</h4>
+              <p>The token moves through waiting, called and in-consultation on a shared screen — and on the patient's own WhatsApp, in their own language.</p>
+            </div>
+          </div>
+          <div class="p-step">
+            <span class="pn">04</span>
+            <div>
+              <h4>Consultation</h4>
+              <p>Doctor logs vitals, chief complaints and diagnosis, and writes a prescription with dosage and food instructions in under a minute.</p>
+            </div>
+          </div>
+          <div class="p-step">
+            <span class="pn">05</span>
+            <div>
+              <h4>Pharmacy &amp; billing</h4>
+              <p>The prescription lands at the dispensing desk the moment consultation ends, and consultation plus medicine charges settle in one GST-ready bill.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURE GRID -->
+    <section style="padding-top:0;">
+      <div class="wrap">
+        <div class="feat-grid">
+          <div class="feat">
+            <h4>A queue everyone can see</h4>
+            <p>Waiting-room display, reception screen and the doctor's console all show the same live token — nobody has to ask.</p>
+          </div>
+          <div class="feat">
+            <h4>WhatsApp that answers first</h4>
+            <p>Confirmations, "you're two away" nudges and no-show reminders go out automatically, in the patient's own language.</p>
+          </div>
+          <div class="feat">
+            <h4>A prescription that prints clean</h4>
+            <p>Drug, dosage, timing and food instructions — signed, dated, and legible, every single time.</p>
+          </div>
+          <div class="feat">
+            <h4>Pharmacy gets it instantly</h4>
+            <p>No walking a paper slip across the hallway. The Rx is at the counter before the patient is.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHY CLINIXA -->
+    <section>
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="sec-tag">WHY CLINIXA</span>
+          <h2>Not another tool for your clinic. One workflow underneath it.</h2>
+          <p>Clinixa connects the desks that already work together, instead of making your team learn another disconnected process.</p>
+        </div>
+        <div class="why-grid">
+          <div class="why-card">
+            <div class="num">01</div>
+            <h4>One patient record</h4>
+            <p>Reception, doctor and pharmacy work from the same patient information.</p>
+          </div>
+          <div class="why-card">
+            <div class="num">02</div>
+            <h4>A queue patients can see</h4>
+            <p>Reduce repeated “when is my turn?” calls with live queue visibility.</p>
+          </div>
+          <div class="why-card">
+            <div class="num">03</div>
+            <h4>WhatsApp in the workflow</h4>
+            <p>Appointments, queue updates and reminders can reach patients on WhatsApp.</p>
+          </div>
+          <div class="why-card">
+            <div class="num">04</div>
+            <h4>Designed for OPD speed</h4>
+            <p>Fast check-in, consultation and prescription flows keep the system out of the way.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODULES -->
+    <section id="platform">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="sec-tag">THE PLATFORM</span>
+          <h2>Four desks, one system underneath.</h2>
+          <p>Reception, the doctor's room, the pharmacy counter and the owner's office all read from the same patient record, updated the moment it changes.</p>
+        </div>
+
+        <div class="module">
+          <div class="m-visual">
+            <span class="vh">BOOKING — SUNRISE FAMILY CLINIC</span>
+            <div class="vline"><span>Dr. Aisha Reddy · Pediatrics</span><span class="val">₹500 · 4:30 PM open</span></div>
+            <div class="vline"><span>Dr. Karan Bose · Dermatology</span><span class="val">₹700 · Tmrw 10 AM</span></div>
+            <div class="vline"><span>Appointment ID</span><span class="val">SFC-08421</span></div>
+          </div>
+          <div class="m-text">
+            <span class="m-index">01 — WEBSITE &amp; BOOKING</span>
+            <h3>A booking page that only shows what's actually open</h3>
+            <p>Your clinic gets a fast, branded site with a doctor directory and a slot picker tied to real availability — not a phone call that ends in "let me check and call you back."</p>
+            <ul>
+              <li>Doctors, fees and services, editable from the admin panel</li>
+              <li>Real-time slot availability, no manual double-checking</li>
+              <li>Instant confirmation with an appointment ID</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="module rev">
+          <div class="m-visual">
+            <span class="vh">RECEPTION — TODAY</span>
+            <div class="vline"><span>Match on phone number</span><span class="val">Auto</span></div>
+            <div class="vline"><span>Walk-ins added</span><span class="val">9</span></div>
+            <div class="vline"><span>Payment recorded</span><span class="val">UPI · Cash · Card</span></div>
+          </div>
+          <div class="m-text">
+            <span class="m-index">02 — RECEPTION &amp; QUEUE</span>
+            <h3>Register a walk-in in the time it takes to say their name</h3>
+            <p>Duplicate entries are caught by phone number, so a returning patient's full history pulls up instead of starting over. The queue moves in two clicks: check in, call, complete.</p>
+            <ul>
+              <li>Universal search by phone, name or patient ID</li>
+              <li>Live status: booked, checked-in, in-consult, no-show</li>
+              <li>Cash, UPI and card payments recorded at the desk</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="module">
+          <div class="m-visual">
+            <span class="vh">CONSULTATION — FARID ALAM</span>
+            <div class="vline"><span>BP · Pulse · SpO2</span><span class="val">120/80 · 78 · 98%</span></div>
+            <div class="vline"><span>Amoxicillin 500mg</span><span class="val">1-0-1 · 5 days</span></div>
+            <div class="vline"><span>Diagnosis</span><span class="val">Acute pharyngitis</span></div>
+          </div>
+          <div class="m-text">
+            <span class="m-index">03 — DOCTOR &amp; RX</span>
+            <h3>Built for the speed of a real OPD, not a demo</h3>
+            <p>Vitals, chief complaints and diagnosis, logged fast. Drug search with dosage and food instructions, then a clean printable prescription with your letterhead and registration number.</p>
+            <ul>
+              <li>Full patient history visible during the visit, not after</li>
+              <li>Custom letterhead, registration number and signature line</li>
+              <li>Print or share the prescription straight to WhatsApp</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="module rev">
+          <div class="m-visual">
+            <span class="vh">PHARMACY &amp; ADMIN — THIS MONTH</span>
+            <div class="vline"><span>Revenue</span><span class="val">₹8,42,000</span></div>
+            <div class="vline"><span>Consultations</span><span class="val">1,204</span></div>
+            <div class="vline"><span>Rx dispensed</span><span class="val">968</span></div>
+          </div>
+          <div class="m-text">
+            <span class="m-index">04 — PHARMACY &amp; ADMIN</span>
+            <h3>The prescription arrives before the patient does</h3>
+            <p>The pharmacy desk gets the Rx the second a consultation ends — no slip changing hands. Owners get revenue, doctor-wise load and staff access without opening a spreadsheet.</p>
+            <ul>
+              <li>Real-time Rx feed with dispensing checks</li>
+              <li>Role-based access: admin, doctor, reception, pharmacy</li>
+              <li>Doctor schedules, fees and website content, self-serve</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHO IT'S FOR -->
+    <section>
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="sec-tag">WHO IT'S FOR</span>
+          <h2>Fits the clinic you already run.</h2>
+        </div>
+        <div class="audience-grid">
+          <div class="aud-card">
+            <h4>Solo clinics</h4>
+            <p>Simple booking, queue and prescription management.</p>
+          </div>
+          <div class="aud-card">
+            <h4>Polyclinics</h4>
+            <p>Multiple doctors, schedules and live queues.</p>
+          </div>
+          <div class="aud-card">
+            <h4>Dental &amp; specialty</h4>
+            <p>Patient history, consultation and prescription workflow.</p>
+          </div>
+          <div class="aud-card">
+            <h4>Diagnostic centres</h4>
+            <p>Appointments and patient-flow coordination.</p>
+          </div>
+          <div class="aud-card">
+            <h4>Multi-branch</h4>
+            <p>Central administration across locations and teams.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DATA & SECURITY -->
+    <section class="security">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="sec-tag">DATA &amp; ACCESS</span>
+          <h2>Patient data stays controlled.</h2>
+          <p>Clinixa uses role-based access and protected data flows. Exact controls should match your actual deployment.</p>
+        </div>
+        <div class="security-grid">
+          <div class="security-card">
+            <h4>Role-based access</h4>
+            <p>Separate access for administrators, doctors, reception and pharmacy teams.</p>
+          </div>
+          <div class="security-card">
+            <h4>Protected records</h4>
+            <p>Patient information is protected during system communication and storage.</p>
+          </div>
+          <div class="security-card">
+            <h4>Access control</h4>
+            <p>Administrators can manage staff access and revoke access when required.</p>
+          </div>
+          <div class="security-card">
+            <h4>Operational controls</h4>
+            <p>Designed so clinic teams can control who can view and act on patient information.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section id="pricing">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="sec-tag">PRICING</span>
+          <h2>One flat number. No per-appointment surprises.</h2>
+          <p>A lot of clinic software quotes a low headline price, then adds a fee per booking once you're dependent on it. Clinixa doesn't — what you see is the bill.</p>
+        </div>
+
+        <div class="flat-notes-grid">
+          <div class="flat-note">
+            <b>Flat monthly pricing.</b>
+            No per-appointment fee, no marketplace commission, no "Pro listing" upsell.
+          </div>
+          <div class="flat-note">
+            <b>WhatsApp via Meta API.</b>
+            The integration is built in — your clinic uses its own WhatsApp Business API account and pays Meta directly.
+          </div>
+          <div class="flat-note">
+            <b>Your own payment gateway.</b>
+            Connect Razorpay, PayU, or Stripe directly — transaction charges are paid directly to your gateway.
+          </div>
+        </div>
+
+        <div class="price-tables">
+          <div class="table-scroll">
+            <table class="plans">
+              <caption>SAAS SUBSCRIPTIONS — BILLED DIRECT TO YOUR CLINIC</caption>
+              <thead>
+                <tr>
+                  <th>Plan</th>
+                  <th>Solo <span class="price">₹1,999/mo <small>·  · ₹19,999/yr</small></span></th>
+                  <th class="col-featured">Clinic <span
+                      style="display:block;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--emerald);margin-top:4px;letter-spacing:0.04em;">RECOMMENDED FOR GROWING CLINICS</span><span class="price">₹4,999/mo <small>·  · ₹49,999/yr</small></span>
+                  </th>
+                  <th>Enterprise <span class="price">₹12,999/mo <small>·  · ₹1,29,999/yr</small></span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th>Built for</th>
+                  <td>Single-doctor clinic</td>
+                  <td class="col-featured">2–6 doctor polyclinic</td>
+                  <td>Multi-branch or hospital OPD</td>
+                </tr>
+                <tr>
+                  <th>Doctors</th>
+                  <td>1</td>
+                  <td class="col-featured">Up to 6</td>
+                  <td>Unlimited</td>
+                </tr>
+                <tr>
+                  <th>Staff accounts</th>
+                  <td>2 (reception)</td>
+                  <td class="col-featured">10 (reception + pharmacy)</td>
+                  <td>Unlimited, custom roles</td>
+                </tr>
+                <tr>
+                  <th>Booking website</th>
+                  <td class="yes">Included</td>
+                  <td class="yes col-featured">Included</td>
+                  <td class="yes">Multi-location CMS</td>
+                </tr>
+                <tr>
+                  <th>Live OPD queue</th>
+                  <td class="yes">Included</td>
+                  <td class="yes col-featured">Multi-doctor queues</td>
+                  <td class="yes">Multi-counter display</td>
+                </tr>
+                <tr>
+                  <th>WhatsApp reminders</th>
+                  <td>Add-on<br><small style="color:var(--ink-soft);font-weight:400;">+ Meta charges</small></td>
+                  <td class="yes col-featured">Included<br><small style="color:var(--ink-soft);font-weight:400;">+ Meta charges</small></td>
+                  <td class="yes">Included, multilingual<br><small style="color:var(--ink-soft);font-weight:400;">+ Meta charges</small></td>
+                </tr>
+                <tr>
+                  <th>Pharmacy module</th>
+                  <td>Add-on</td>
+                  <td class="yes col-featured">Included</td>
+                  <td class="yes">Multi-inventory</td>
+                </tr>
+                <tr>
+                  <th>Support</th>
+                  <td>Email, 24×7</td>
+                  <td class="col-featured">Priority chat &amp; WhatsApp, 24×7</td>
+                  <td>24×7 dedicated account manager</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="sec-tag">QUESTIONS</span>
+          <h2>Before you get started</h2>
+        </div>
+        <div class="faq">
+          <details open>
+            <summary>Can doctors customize prescription print formats?</summary>
+            <p>Yes. You can upload your clinic logo, add doctor registration numbers, customize letterheads, and choose what fields (vitals, diagnosis, notes) appear on the printed slip.</p>
+          </details>
+          <details>
+            <summary>Does the queue system work on mobile and tablets?</summary>
+            <p>Yes. The portal is completely responsive. Doctors and receptionists can manage the queue seamlessly from iPads, Android tablets, laptops, or smartphones.</p>
+          </details>
+          <details>
+            <summary>Can we use our own custom domain?</summary>
+            <p>Yes. On the Professional and Enterprise plans, your patient-facing booking site and staff portals can run on your own domain (www.yourclinic.com).</p>
+          </details>
+          <details>
+            <summary>How does patient data security and privacy work?</summary>
+            <p>Patient records are encrypted, access is strictly governed by role-based authentication, and staff sessions can be revoked instantly by the administrator.</p>
+          </details>
+          <details>
+            <summary>Can we integrate our local pharmacy or laboratory?</summary>
+            <p>Yes. The system includes a dedicated pharmacy dispensing portal that receives real-time electronic prescriptions the moment a doctor completes a consultation.</p>
+          </details>
+          <details>
+            <summary>What happens if our internet drops mid-consultation?</summary>
+            <p>Session protection retains your active draft notes and prescriptions in the browser workspace so nothing typed during a consultation is lost if connectivity momentarily dips.</p>
+          </details>
+          <details>
+            <summary>We already have patient records elsewhere — can you migrate them?</summary>
+            <p>Yes. Send an export from your current system and our team maps it into Clinixa as part of onboarding, at no extra charge on Professional and Enterprise plans.</p>
+          </details>
+          <details>
+            <summary>Who pays for the WhatsApp messages — you or us?</summary>
+            <p>Clinixa builds and manages the integration, but the messages themselves run on your clinic's own WhatsApp Business API account with Meta. Meta bills your clinic directly, per conversation, at their published rates — we don't mark that up or route it through our billing.</p>
+          </details>
+          <details>
+            <summary>What about online payments — do you charge extra for a payment gateway?</summary>
+            <p>We can integrate a payment gateway of your choice (Razorpay, PayU, Stripe, etc.) so patients can pay online at booking. The gateway's own transaction charges are billed by that provider directly to your clinic, at their standard rates — we don't add a markup on top.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT & LIVE DEMO FORM (EMAILJS INTEGRATION) -->
+    <section id="contact" class="contact-section">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="sec-tag">CONTACT &amp; DEMO</span>
+          <h2>See Clinixa customized for your clinic.</h2>
+          <p>Book a live 15-minute walkthrough with our healthcare solutions team or discuss onboarding your clinic.</p>
+        </div>
+
+        <div class="contact-grid">
+          <!-- Direct channels -->
+          <div>
+            <a href="mailto:hello@arimini.in" class="contact-opt-item">
+              <div class="contact-opt-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--emerald);">
+                ✉
+              </div>
+              <div style="flex:1;">
+                <div style="font-weight:700;font-size:15px;color:var(--ink);">Email Direct</div>
+                <div style="font-size:13px;color:var(--ink-soft);">hello@arimini.in</div>
+              </div>
+              <span style="font-size:12px;font-weight:600;color:var(--emerald);">Send Email →</span>
+            </a>
+
+            <a href="tel:+919405058496" class="contact-opt-item">
+              <div class="contact-opt-icon" style="background: rgba(79, 70, 229, 0.1); color: var(--indigo);">
+                📞
+              </div>
+              <div style="flex:1;">
+                <div style="font-weight:700;font-size:15px;color:var(--ink);">Call Direct</div>
+                <div style="font-size:13px;color:var(--ink-soft);">+91 94050 58496</div>
+              </div>
+              <span style="font-size:12px;font-weight:600;color:var(--indigo);">Call Now →</span>
+            </a>
+
+            <div class="contact-badges">
+              <div class="contact-badge-item">
+                <b>4h</b>
+                <span>Response time</span>
+              </div>
+              <div class="contact-badge-item">
+                <b>15m</b>
+                <span>Live Walkthrough</span>
+              </div>
+              <div class="contact-badge-item">
+                <b>Free</b>
+                <span>Data Migration</span>
+              </div>
+            </div>
+
+            <div style="margin-top:20px;padding:20px 22px;background:var(--paper);border:1px solid rgba(99,102,241,0.25);border-radius:14px;box-shadow:var(--shadow-sm);">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <a href="https://www.arimini.in" target="_blank" rel="noopener" style="display:inline-block;">
+                  <img src="assets/arimini.png" alt="Arimini" style="height:28px;width:auto;display:block;" onerror="this.src='assets/arimini-logo.svg'">
+                </a>
+              </div>
+              <div style="font-size:13.5px;color:var(--ink);font-weight:600;">Nagpur, Maharashtra, India</div>
+              <div style="font-size:12.5px;color:var(--ink-soft);margin-top:3px;">Building modern healthcare &amp; clinic workflow systems nationwide.</div>
+            </div>
+          </div>
+
+          <!-- EmailJS Form -->
+          <div class="contact-card-glass">
+            <div id="form-container">
+              <form id="clinixa-contact-form">
+                <div style="font-family:var(--heading-font);font-size:18px;font-weight:700;margin-bottom:18px;">
+                  Schedule a 15-Minute Live Demo
+                </div>
+
+                <div id="form-error-msg" class="form-error-banner" style="display:none;"></div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label" for="from_name">Doctor / Contact Name <span class="req">*</span></label>
+                    <input class="form-control" type="text" id="from_name" name="from_name" placeholder="Dr. Rajesh Verma" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="company">Clinic / Hospital Name <span class="req">*</span></label>
+                    <input class="form-control" type="text" id="company" name="company" placeholder="Sunrise Health Polyclinic" required>
+                  </div>
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label" for="reply_to">Work Email <span class="req">*</span></label>
+                    <input class="form-control" type="email" id="reply_to" name="reply_to" placeholder="doctor@clinic.com" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="phone">Phone / WhatsApp <span class="req">*</span></label>
+                    <input class="form-control" type="tel" id="phone" name="phone" placeholder="+91 98765 43210" required>
+                  </div>
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label" for="budget">Plan Interested In <span class="req">*</span></label>
+                    <select class="form-control" id="budget" name="budget" required>
+                      <option value="">Select Plan Tier</option>
+                      <option value="Solo Clinic (₹1,999/mo)">Solo Clinic (1 Doctor · ₹1,999/mo)</option>
+                      <option value="Polyclinic (₹4,999/mo)" selected>Polyclinic (2-6 Doctors · ₹4,999/mo)</option>
+                      <option value="Enterprise OPD (₹12,999/mo)">Enterprise (Multi-Branch OPD · ₹12,999/mo)</option>
+                      <option value="White-Label Reseller">Agency / White-Label Licensing</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="service">Implementation Timeline <span class="req">*</span></label>
+                    <select class="form-control" id="service" name="service" required>
+                      <option value="Clinixa Demo & Setup - Immediate" selected>Immediate (Within 1 week)</option>
+                      <option value="Clinixa Demo & Setup - Next Month">Next Month</option>
+                      <option value="Clinixa Custom White-Label">Custom White-Label Project</option>
+                      <option value="Exploring Solutions">Just exploring solutions</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="message">Current Challenges / Daily OPD Load</label>
+                  <textarea class="form-control" id="message" name="message" rows="3" placeholder="Tell us about your OPD queue load, number of consulting rooms, or current software..."></textarea>
+                </div>
+
+                <button type="submit" id="submit-btn" class="btn btn-solid btn-lg" style="width:100%;border:none;">
+                  <span id="btn-text">Request Live 15-Min Walkthrough →</span>
+                </button>
+
+                <p style="font-size:12px;color:var(--ink-soft);text-align:center;margin:12px 0 0 0;">
+                  🔒 We respect patient data confidentiality. No spam. You'll receive a calendar invite within 4 hours.
+                </p>
+              </form>
+
+              <!-- Success Card -->
+              <div id="form-success-state" class="form-success-card" style="display:none;">
+                <div class="success-icon-wrap">✓</div>
+                <h3 style="font-size:22px;color:var(--ink);margin-bottom:8px;">Demo Request Received!</h3>
+                <p style="color:var(--ink-soft);font-size:14.5px;line-height:1.6;max-width:38ch;margin:0 auto 20px;">
+                  Thank you, <strong id="success-user-name">Doctor</strong>. Our solutions team has received your clinic details and will reach out within 4 hours to confirm your walkthrough.
+                </p>
+                <div style="font-size:13px;color:var(--indigo);font-weight:600;">
+                  Direct questions? Call us at +91 94050 58496
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA BANNER -->
+    <section style="padding-top:0;">
+      <div class="wrap">
+        <div class="cta-band">
+          <div>
+            <h3>Ready to see it running on your own patient list?</h3>
+            <p>15-minute walkthrough · Your workflow · See the queue, consultation and prescription flow.</p>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <a href="#contact" class="btn btn-solid">Book a Demo</a>
+            <a href="#contact" class="btn btn-ghost">Talk to Us</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer id="footer">
+    <div class="wrap">
+      <div class="foot-grid">
+        <div class="foot-brand">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="brand-icon" style="width:32px;height:32px;font-size:14px;">CX</div>
+            <div style="display:flex;flex-direction:column;line-height:1.15;">
+              <span class="mark" style="font-weight:800;font-size:19px;color:var(--ink);">Clinixa</span>
+              <span style="font-size:10.5px;font-weight:600;color:var(--indigo);letter-spacing:0.02em;">Your Clinic Companion</span>
+            </div>
+          </div>
+          <p>An OPD system connecting booking, reception, the doctor’s desk, pharmacy and billing — engineered by <a href="https://www.arimini.in" target="_blank" rel="noopener" style="color:var(--indigo);font-weight:700;">Arimini</a>.</p>
+          <div style="margin-top:14px;">
+            <a href="https://www.arimini.in" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;padding:6px 14px;border-radius:8px;background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.2);transition:all 0.15s ease;">
+              <img src="assets/arimini.png" alt="Arimini" style="height:22px;width:auto;display:block;" onerror="this.src='assets/arimini-logo.svg'">
+            </a>
+          </div>
+        </div>
+        <div class="foot-col">
+          <h5>PRODUCT</h5>
+          <a href="#how-it-works">How it works</a>
+          <a href="#platform">Platform</a>
+          <a href="#pricing">Pricing</a>
+        </div>
+        <div class="foot-col">
+          <h5>SUPPORT</h5>
+          <a href="#faq">FAQ</a>
+          <a href="mailto:hello@arimini.in">Email us</a>
+          <a href="tel:+919405058496">Call us</a>
+        </div>
+        <div class="foot-col">
+          <div style="margin-bottom:14px;">
+            <a href="https://www.arimini.in" target="_blank" rel="noopener" style="display:inline-block;">
+              <img src="assets/arimini.png" alt="Arimini" style="height:20px;width:auto;display:block;" onerror="this.src='assets/arimini-logo.svg'">
+            </a>
+          </div>
+          <a href="https://www.arimini.in" target="_blank" rel="noopener">arimini.in</a>
+          <a href="mailto:hello@arimini.in">hello@arimini.in</a>
+          <a href="tel:+919405058496">+91 94050 58496</a>
+        </div>
+      </div>
+      <div class="foot-bottom">
+        <span>© 2026 Clinixa. Built by <a href="https://www.arimini.in" target="_blank" rel="noopener">Arimini</a> · Nagpur, Maharashtra, India.</span>
+        <span>Mon–Fri, 9 AM–7 PM IST</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Multi-lingual question rotator
+    const queueQuestions = [
+      "Abhi number kab aayega?",
+      "मेरा नंबर कब आएगा?",
+      "माझा नंबर कधी येईल?",
+      "When will my number come?"
+    ];
+
+    const questionEl = document.getElementById("queue-question");
+    let questionIndex = 0;
+
+    if (questionEl && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setInterval(() => {
+        questionEl.classList.add("is-changing");
+
+        setTimeout(() => {
+          questionIndex = (questionIndex + 1) % queueQuestions.length;
+          questionEl.textContent = queueQuestions[questionIndex];
+          questionEl.classList.remove("is-changing");
+        }, 250);
+      }, 2200);
+    }
+
+    // EmailJS Form Submission Handling (Same Service & Template as Arimini Website)
+    (function () {
+      const EMAILJS_SERVICE_ID = 'service_bsm3ncf';
+      const EMAILJS_TEMPLATE_ID = 'template_6ohs5xf';
+      const EMAILJS_PUBLIC_KEY = 'QG_OD9p5x0YhsXCse';
+
+      if (window.emailjs) {
+        emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+      }
+
+      const form = document.getElementById('clinixa-contact-form');
+      const submitBtn = document.getElementById('submit-btn');
+      const btnText = document.getElementById('btn-text');
+      const errorMsg = document.getElementById('form-error-msg');
+      const successState = document.getElementById('form-success-state');
+      const successUserName = document.getElementById('success-user-name');
+
+      if (form) {
+        form.addEventListener('submit', async function (e) {
+          e.preventDefault();
+
+          const fromName = document.getElementById('from_name').value.trim();
+          const company = document.getElementById('company').value.trim();
+          const replyTo = document.getElementById('reply_to').value.trim();
+          const phone = document.getElementById('phone').value.trim();
+          const budget = document.getElementById('budget').value;
+          const service = document.getElementById('service').value;
+          const message = document.getElementById('message').value.trim();
+
+          // UI Loading State
+          submitBtn.disabled = true;
+          btnText.textContent = 'Sending Demo Request...';
+          errorMsg.style.display = 'none';
+
+          const templateParams = {
+            from_name: fromName,
+            company: company,
+            reply_to: replyTo,
+            to_email: 'hello@arimini.in',
+            phone: phone,
+            country: 'India',
+            budget: budget,
+            service: 'Clinixa OPD SaaS - ' + service,
+            message: message || 'Demo requested for ' + company
+          };
+
+          try {
+            if (window.emailjs) {
+              await emailjs.send(
+                EMAILJS_SERVICE_ID,
+                EMAILJS_TEMPLATE_ID,
+                templateParams,
+                EMAILJS_PUBLIC_KEY
+              );
+            } else {
+              throw new Error('EmailJS SDK not loaded');
+            }
+
+            // Show Success State
+            form.style.display = 'none';
+            if (successUserName) {
+              successUserName.textContent = fromName || 'Doctor';
+            }
+            successState.style.display = 'block';
+          } catch (err) {
+            console.error('Email submission error:', err);
+            errorMsg.textContent = 'Something went wrong while submitting. Please call us directly at +91 94050 58496 or email hello@arimini.in.';
+            errorMsg.style.display = 'block';
+          } finally {
+            submitBtn.disabled = false;
+            btnText.textContent = 'Request Live 15-Min Walkthrough →';
+          }
+        });
+      }
+    })();
+  </script>
+
+</body>
+
+</html>

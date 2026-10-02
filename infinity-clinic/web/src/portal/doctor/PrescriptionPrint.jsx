@@ -12,7 +12,7 @@ export default function PrescriptionPrint({ prescriptionId, onClose }) {
 
   if (!data) return <p>Loading...</p>;
 
-  const clinicName = typeof data.clinic_name === 'string' ? data.clinic_name.replace(/"/g, '') : 'Infinity Clinic';
+  const clinicName = typeof data.clinic_name === 'string' ? data.clinic_name.replace(/"/g, '') : 'Pulse Multi-Specialty Clinic';
 
   return (
     <div className="print-area prescription-print">
@@ -61,7 +61,20 @@ export default function PrescriptionPrint({ prescriptionId, onClose }) {
           })}
         </tbody>
       </table>
-      {data.advice && <p><strong>Advice:</strong> {data.advice}</p>}
+      {Array.isArray(data.services) && data.services.length > 0 && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <h4>Ordered Investigations &amp; Procedures</h4>
+          <ul style={{ margin: '6px 0 12px 18px' }}>
+            {data.services.map((s, idx) => (
+              <li key={idx}>
+                <strong>{s.service_name || s.serviceName}</strong>
+                {s.notes && ` — ${s.notes}`}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {data.advice && <p style={{ marginTop: '1rem' }}><strong>Advice:</strong> {data.advice}</p>}
       <div className="no-print" style={{ marginTop: '2rem' }}>
         <button className="btn btn-primary" onClick={() => window.print()}>Print</button>
         <button className="btn" onClick={onClose}>Close</button>

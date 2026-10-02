@@ -164,17 +164,17 @@ def build():
         "Change all passwords before going live."
     )
     add_table(doc, ["Role", "Email", "Password"], [
-        ["Admin", "admin@infinityclinic.com", "Admin@123"],
-        ["Doctor (Cardiology)", "doctor@infinityclinic.com", "Doctor@123"],
-        ["Receptionist", "receptionist@infinityclinic.com", "Reception@123"],
-        ["Pharmacist", "pharmacy@infinityclinic.com", "Pharmacy@123"],
+        ["Admin", "admin@pulseclinic.demo", "Admin@123"],
+        ["Doctor (Cardiology)", "doctor@pulseclinic.demo", "Doctor@123"],
+        ["Receptionist", "receptionist@pulseclinic.demo", "Reception@123"],
+        ["Pharmacist", "pharmacy@pulseclinic.demo", "Pharmacy@123"],
     ])
     doc.add_heading("2.2 Additional Doctor Accounts (Demo)", level=2)
     add_table(doc, ["Doctor", "Email", "Password", "Specialization"], [
-        ["Dr. Prasann Moon", "moon@infinityclinics.com", "Doctor@123", "ENT"],
-        ["Dr. Gunjan Kolhe", "kolhe@infinityclinics.com", "Doctor@123", "Orthopaedics"],
-        ["Dr. Pranit Khandait", "khandait@infinityclinics.com", "Doctor@123", "Neurology"],
-        ["Dr. Shweta Lodhi", "lodhi@infinityclinics.com", "Doctor@123", "Gynaecology"],
+        ["Dr. Priya Nair", "nair@pulseclinic.demo", "Doctor@123", "ENT"],
+        ["Dr. Rohan Kapoor", "kapoor@pulseclinic.demo", "Doctor@123", "Orthopaedics"],
+        ["Dr. Ananya Sen", "sen@pulseclinic.demo", "Doctor@123", "Neurology"],
+        ["Dr. Kavita Roy", "roy@pulseclinic.demo", "Doctor@123", "Gynaecology"],
     ])
 
     doc.add_page_break()
@@ -566,12 +566,12 @@ def build():
     # Appendix
     doc.add_heading("Appendix A: End-to-End Visit Example", level=1)
     add_numbered(doc, [
-        "Patient visits infinityclinic.com and books Dr. Maske for tomorrow at 10:00 AM.",
+        "Patient visits the clinic portal and books Dr. Sharma for tomorrow at 10:00 AM.",
         "Booking status: Pending.",
         "Next day — receptionist opens Dashboard, finds the appointment, clicks Confirm.",
         "Patient arrives. Receptionist clicks Check In. Token #7 is issued.",
-        "Dr. Maske sees Token #7 in his OPD queue. He clicks Call, then Start.",
-        "He records: Chief complaint 'Chest pain', Diagnosis 'Mild gastritis', adds Pantoprazole 40mg for 14 days.",
+        "Dr. Sharma sees Token #7 in his OPD queue. He clicks Call, then Start.",
+        "He records: Chief complaint 'Chest discomfort', Diagnosis 'Mild reflux / acidity', adds Pantoprazole 40mg for 14 days.",
         "He clicks Complete Visit & Send Rx.",
         "Pharmacy desk sees the new prescription. Pharmacist dispenses medicines and clicks Mark as Dispensed.",
         "Receptionist clicks Payment on the appointment, records ₹500 Cash, prints receipt.",

@@ -10,6 +10,17 @@ export default function AppointmentDetailModal({ appointment, onClose, patientLi
     ? `${patientLinkPrefix}/${appointment.patient_id}`
     : null;
 
+  const services = Array.isArray(appointment.services) ? appointment.services : [];
+  const servicesFormatted = services.length > 0 ? (
+    <ul style={{ margin: 0, paddingLeft: 18 }}>
+      {services.map((s, idx) => (
+        <li key={idx}>
+          {s.service_name || s.serviceName} {s.quantity > 1 ? `(×${s.quantity})` : ''} — <strong>₹{((Number(s.price) || 0) * (Number(s.quantity) || 1)).toLocaleString('en-IN')}</strong>
+        </li>
+      ))}
+    </ul>
+  ) : null;
+
   return (
     <Modal open onClose={onClose} title="Appointment Details">
       <DetailDl
@@ -21,9 +32,10 @@ export default function AppointmentDetailModal({ appointment, onClose, patientLi
           { label: 'Time', value: appointment.appointment_time?.slice(0, 5) },
           { label: 'Status', value: <StatusBadge status={appointment.status} /> },
           { label: 'Booked via', value: appointment.booked_via?.replace(/_/g, ' ') },
-          { label: 'Consultation fee', value: appointment.consultation_fee != null ? `₹${appointment.consultation_fee}` : null },
+          { label: 'Consultation fee', value: appointment.consultation_fee != null ? `₹${Number(appointment.consultation_fee).toLocaleString('en-IN')}` : null },
+          servicesFormatted ? { label: 'Services & Tests', value: servicesFormatted } : null,
           { label: 'Notes', value: appointment.notes || '—' },
-        ]}
+        ].filter(Boolean)}
       />
       <div className="modal-footer-actions">
         {patientLink && (

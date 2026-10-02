@@ -16,7 +16,11 @@ router.get('/doctors/:doctorId/slots', async (req, res, next) => {
       throw new AppError('Date is required', 400, 'VALIDATION_ERROR');
     }
 
-    const dayOfWeek = new Date(date).getDay();
+    const [y, m, d] = date.split('-').map(Number);
+    if (!y || !m || !d) {
+      throw new AppError('Invalid date format. Expected YYYY-MM-DD', 400, 'VALIDATION_ERROR');
+    }
+    const dayOfWeek = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
     const { rows: schedules } = await query(
       `SELECT start_time, end_time, slot_duration_minutes FROM doctor_schedules
        WHERE doctor_id = $1 AND day_of_week = $2 AND is_active = true`,

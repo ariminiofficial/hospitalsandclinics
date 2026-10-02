@@ -61,7 +61,8 @@ export const Tables = {
   payments: ['id', 'appointment_id', 'amount', 'method', 'status', 'razorpay_order_id', 'razorpay_payment_id', 'razorpay_signature', 'recorded_by', 'paid_at', 'created_at'],
   website_content: ['id', 'section_key', 'content', 'is_published', 'updated_at'],
   testimonials: ['id', 'patient_name', 'content', 'rating', 'is_published', 'sort_order', 'created_at'],
-  services: ['id', 'title', 'description', 'icon', 'is_published', 'sort_order', 'created_at'],
+  services: ['id', 'title', 'description', 'price', 'category', 'duration_minutes', 'icon', 'is_published', 'is_active', 'sort_order', 'created_at'],
+  appointment_services: ['id', 'appointment_id', 'service_id', 'service_name', 'price', 'quantity', 'notes', 'created_at'],
   clinic_settings: ['key', 'value', 'updated_at'],
   audit_log: ['id', 'user_id', 'action', 'entity_type', 'entity_id', 'details', 'created_at'],
 };
@@ -86,12 +87,22 @@ export const bookAppointmentInput = z.object({
   patient: patientInput.pick({ phone: true, fullName: true, email: true, dateOfBirth: true, gender: true }),
 });
 
+/** appointment_services table item */
+export const appointmentServiceItemInput = z.object({
+  serviceId: uuid.optional().nullable(),
+  serviceName: z.string().min(1),
+  price: z.coerce.number().min(0).default(0),
+  quantity: z.coerce.number().int().min(1).default(1),
+  notes: z.string().optional().nullable(),
+});
+
 /** appointments table — walk-in */
 export const walkInInput = z.object({
   doctorId: uuid,
   patientId: uuid.optional(),
   patient: patientInput.pick({ phone: true, fullName: true, email: true, gender: true }).optional(),
   notes: z.string().optional(),
+  services: z.array(appointmentServiceItemInput).optional(),
 });
 
 /** appointments table — reschedule */
@@ -132,6 +143,7 @@ export const consultationInput = z.object({
   chiefComplaint: z.string().optional(),
   diagnosis: z.string().optional(),
   notes: z.string().optional(),
+  services: z.array(appointmentServiceItemInput).optional(),
 });
 
 /** prescription_items table */
@@ -167,21 +179,28 @@ export const medicineTemplateInput = z.object({
 export const prescriptionInput = z.object({
   advice: z.string().optional(),
   items: z.array(prescriptionItemInput).min(1),
+  pharmacyStatus: z.enum(['draft', 'pending', 'dispensing', 'dispensed', 'cancelled']).optional(),
+  sendToPharmacy: z.boolean().optional(),
 });
 
 /** payments table */
 export const recordPaymentInput = z.object({
   amount: z.number().positive(),
   method: PaymentMethod.exclude(['razorpay']),
+  services: z.array(appointmentServiceItemInput).optional(),
 });
 
 /** services table */
 export const serviceInput = z.object({
   title: z.string().min(1),
-  description: z.string().optional(),
-  icon: z.string().max(100).optional(),
+  description: z.string().optional().nullable(),
+  price: z.coerce.number().min(0).default(0),
+  category: z.string().max(100).optional().nullable(),
+  durationMinutes: z.coerce.number().int().min(1).max(240).optional().nullable(),
+  icon: z.string().max(100).optional().nullable(),
   isPublished: z.boolean().optional(),
-  sortOrder: z.number().int().optional(),
+  isActive: z.boolean().optional(),
+  sortOrder: z.coerce.number().int().optional(),
 });
 
 /** testimonials table */
@@ -275,8 +294,12 @@ export function serviceToDb(data) {
   return {
     title: data.title,
     description: data.description || null,
+    price: data.price ?? 0,
+    category: data.category || 'General',
+    duration_minutes: data.durationMinutes ?? 15,
     icon: data.icon || null,
     is_published: data.isPublished !== false,
+    is_active: data.isActive !== false,
     sort_order: data.sortOrder ?? 0,
   };
 }

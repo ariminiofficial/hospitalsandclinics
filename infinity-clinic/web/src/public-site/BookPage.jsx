@@ -6,12 +6,24 @@ import PageHero from './components/PageHero.jsx';
 
 const STEPS = ['Doctor', 'Date', 'Time', 'Details', 'Done'];
 
+function formatLocalDate(year, month, day) {
+  const y = String(year);
+  const m = String(month + 1).padStart(2, '0');
+  const d = String(day).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function getTodayLocalDate() {
+  const now = new Date();
+  return formatLocalDate(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
 function Calendar({ value, onChange }) {
   const [view, setView] = useState(() => {
-    const d = value ? new Date(value) : new Date();
+    const d = new Date();
     return { year: d.getFullYear(), month: d.getMonth() };
   });
-  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const todayStr = getTodayLocalDate();
   const daysInMonth = new Date(view.year, view.month + 1, 0).getDate();
   const firstDay = new Date(view.year, view.month, 1).getDay();
   const monthName = new Date(view.year, view.month).toLocaleString('default', { month: 'long', year: 'numeric' });
@@ -31,8 +43,8 @@ function Calendar({ value, onChange }) {
         {['S','M','T','W','T','F','S'].map((d) => <div key={d} className="calendar-day-label">{d}</div>)}
         {days.map((day, i) => {
           if (!day) return <div key={`e-${i}`} />;
-          const dateStr = new Date(view.year, view.month, day).toISOString().split('T')[0];
-          const disabled = new Date(view.year, view.month, day) < today;
+          const dateStr = formatLocalDate(view.year, view.month, day);
+          const disabled = dateStr < todayStr;
           return (
             <button key={day} type="button" className={`calendar-day ${value === dateStr ? 'selected' : ''}`}
               disabled={disabled} onClick={() => onChange(dateStr)}>{day}</button>
@@ -51,6 +63,7 @@ export default function BookPage() {
   const [doctors, setDoctors] = useState(contextDoctors);
   const [slots, setSlots] = useState([]);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     doctorId: searchParams.get('doctor') || '',
     appointmentDate: '', appointmentTime: '',
@@ -76,13 +89,25 @@ export default function BookPage() {
 
   const handleSubmit = async () => {
     setError('');
+    setLoading(true);
     try {
+      const cleanPhone = form.phone.replace(/[\s\-()]/g, '');
       await api.post('/public/appointments', {
-        doctorId: form.doctorId, appointmentDate: form.appointmentDate, appointmentTime: form.appointmentTime,
-        patient: { phone: form.phone, fullName: form.fullName, email: form.email },
+        doctorId: form.doctorId,
+        appointmentDate: form.appointmentDate,
+        appointmentTime: form.appointmentTime,
+        patient: {
+          phone: cleanPhone,
+          fullName: form.fullName.trim(),
+          email: form.email.trim() || undefined,
+        },
       });
       setStep(4);
-    } catch (err) { setError(err.message); }
+    } catch (err) {
+      setError(err.message || 'Failed to book appointment. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (step === 4) {
@@ -179,8 +204,8 @@ export default function BookPage() {
                 <p className="text-body-sm">{form.appointmentDate} at {form.appointmentTime}</p>
               </div>
               <div className="form-actions">
-                <button type="button" className="btn btn-ghost" onClick={() => setStep(2)}>Back</button>
-                <button type="submit" className="btn btn-primary">Confirm Booking</button>
+                <button type="button" className="btn btn-ghost" onClick={() => setStep(2)} disabled={loading}>Back</button>
+                <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? 'Booking...' : 'Confirm Booking'}</button>
               </div>
             </form>
           </>

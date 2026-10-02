@@ -1,119 +1,155 @@
-# Infinity Clinic Management System
+# 🏥 Clinixa — Your Clinic Companion
+> **Enterprise-Grade Clinic & OPD Management Platform (CMS & EMR) by [Arimini](https://www.arimini.in)**
 
-Custom clinic management platform: patient website + booking, receptionist/OPD tools, doctor consultation tools, and admin control panel.
+**Clinixa** is an all-in-one, modern Clinic Management System designed for single-doctor practices, polyclinics, dental/specialty centers, and multi-branch hospital outpatient departments (OPDs). It connects the entire patient journey on a single record: automated online booking, real-time reception OPD queue, doctor consultation EMR workspace, digital prescription builder, pharmacy dispensing, and administrative billing.
 
-## Stack
+---
 
-- **Frontend:** React (Vite SPA)
-- **Backend:** Node.js / Express
-- **Database:** PostgreSQL (via PgBouncer in production)
-- **Cache / Realtime:** Redis (pub/sub + token revocation)
-- **Realtime:** Socket.IO
+## 🚀 Tech Stack
 
-## Project Structure
+- **Frontend:** React 18 (Vite SPA) + Vanilla CSS / Modern Glassmorphic Design System
+- **Backend:** Node.js / Express REST API
+- **Database:** PostgreSQL 15+ (via PgBouncer in production)
+- **Cache & Message Broker:** Redis (Pub/Sub & session token management)
+- **Realtime Sync:** Socket.IO / WebSockets (sub-millisecond token queue progression)
+- **Form Delivery:** EmailJS Integration for demo requests & inquiries
+
+---
+
+## 📁 Project Structure
 
 ```
 infinity-clinic/
-├── api/        # Express API
-├── web/        # React SPA (public site + staff portal)
-└── deploy/     # Nginx, PgBouncer, PM2 configs
+├── api/          # Express API (Auth, EMR, OPD Queue, CMS, Billing)
+├── web/          # React Vite SPA (Patient portal + Staff workspaces)
+├── deploy/       # Nginx, PgBouncer, and PM2 production configurations
+└── docs/         # API specifications and product blueprints
 ```
 
-## Local Development (no Docker)
+---
+
+## 🛠️ Local Development (Step-by-Step)
 
 ### Prerequisites
 
-- Node.js 20+
-- PostgreSQL 15+ running locally
-- Redis running locally
+- **Node.js 20+** & npm
+- **PostgreSQL 15+** running locally
+- **Redis** running locally
 
-### 1. Create the database
+### 1. Database Setup
 
 ```bash
+# Create PostgreSQL database
 createdb infinity_clinic
 ```
 
-### 2. API setup
+### 2. API Setup
 
 ```bash
 cd api
 cp .env.example .env
-# Edit .env with your local Postgres/Redis credentials
+# Edit .env with your local PostgreSQL and Redis credentials:
+# DATABASE_URL=postgres://user:password@localhost:5432/infinity_clinic
+# REDIS_URL=redis://localhost:6379
+
 npm install
 npm run migrate
 npm run seed
 npm run dev
 ```
 
-API runs at `https://clinic.arimini.in`.
+*The API server will run at `http://localhost:4000`.*
 
-### 3. Web setup
+### 3. Web Frontend Setup
 
 ```bash
-cd web
+cd ../web
 npm install
 npm run dev
 ```
 
-Web runs at `http://localhost:5173` (proxies `/api` and `/socket.io` to the API).
+*The frontend application will run at `http://localhost:5173` (with `/api` and `/socket.io` reverse-proxied to port 4000).*
 
-## Demo Accounts (from seed)
+---
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@infinityclinic.com | Admin@123 |
-| Doctor | doctor@infinityclinic.com | Doctor@123 |
-| Receptionist | receptionist@infinityclinic.com | Reception@123 |
+## 🔐 Demo Accounts (Generated from Seed)
 
-## Features
+| Role | Email | Password | Access Level |
+|:-----|:------|:---------|:-------------|
+| **Administrator** | `admin@pulseclinic.demo` | `Admin@123` | Full clinic management, staff CRUD, analytics & CMS |
+| **Doctor (Cardiology)** | `doctor@pulseclinic.demo` | `Doctor@123` | Patient consultation, diagnosis, EMR & Rx builder |
+| **Receptionist** | `receptionist@pulseclinic.demo` | `Reception@123` | Walk-in registration, token issuance & live queue |
+| **Pharmacist** | `pharmacy@pulseclinic.demo` | `Pharmacy@123` | Real-time prescription feed & medicine dispensing |
 
-### Public Website
-- CMS-driven home, about, contact pages
-- Doctor listing with fees
-- Services and testimonials
-- Online appointment booking with slot availability
+---
 
-### Receptionist Portal
-- Today's appointments (confirm, check-in, reschedule, cancel, no-show)
-- Live OPD queue (Socket.IO)
-- Walk-in registration
-- Patient search and visit history
-- Offline payment recording
+## ✨ Core Feature Matrix
 
-### Doctor Portal
-- Live queue with call/start/skip/complete
-- Consultation notes (chief complaint, diagnosis)
-- Prescription builder with print view
-- Today's appointments list
+### 🌐 1. Patient-Facing CMS Website & Booking Engine
+- Dynamic doctor directory with specialty spotlights, consultation fees, and real-time open slots.
+- Instant online appointment booking with appointment ID generation (`/book`).
+- Zero double-booking guarantee computed dynamically across doctor schedules.
 
-### Admin Portal
-- Dashboard metrics (patients, revenue, appointments)
-- Doctor CRUD with schedule management
-- Receptionist CRUD
-- Appointment oversight by date
-- Full website CMS (content sections, services, testimonials)
-- Clinic settings
+### 🛎️ 2. Receptionist & Live OPD Queue Desk
+- **Today's Command Center:** Universal patient search (Phone/Name/ID) and visit history.
+- **Real-Time Token Queue:** Socket.IO-powered status updates: `Booked` $\rightarrow$ `Check-in` $\rightarrow$ `Token Issued` $\rightarrow$ `Called` $\rightarrow$ `In-Consultation`.
+- **Walk-in Fast Registration:** Register new or returning walk-in patients in under 15 seconds.
+- **POS / Payment Collection:** Cash, UPI, and Card tracking with invoice generation.
 
-## End-to-End Flow
+### 👨‍⚕️ 3. Doctor Consultation & Smart EMR
+- Distraction-free live OPD queue with 1-click token call, skip, and status updates.
+- Clinical note logging: Chief complaints, vitals (BP, Pulse, SpO2), provisional & final diagnosis.
+- **Digital Prescription Builder:** Drug search, dosage (e.g. 1-0-1), duration, food instructions, and 1-click printable branded PDF Rx with doctor registration number.
+- Longitudinal patient medical history accessible during consultation.
 
-1. **Patient** books online at `/book`
-2. **Receptionist** confirms → checks in → token issued
-3. **Doctor** calls token → starts consultation → saves notes + prescription → completes
-4. **Receptionist** records offline payment
-5. **Admin** sees metrics on dashboard
+### 💊 4. Pharmacy & Dispensing Module
+- Instant prescription feed routed from doctor rooms the second consultation completes.
+- Dispensing verification checklist and consolidated medicine billing handoff.
 
-## Production (VPS)
+### ⚙️ 5. Clinic Administration & Analytics
+- Executive dashboard with daily/monthly revenue, consultation throughput, and peak OPD hours.
+- Doctor schedule and consultation fee manager.
+- Full website CMS editor (services, doctor bios, reviews, contact information).
 
-- Website: https://clinic.arimini.in (Nginx serves the React build)
-- API: https://clinicapi.arimini.in (Nginx proxies `/api` + `/socket.io` to Express)
-- Set `CORS_ORIGIN=https://clinic.arimini.in` and `COOKIE_SECURE=true` on the API
-- Web build uses `VITE_API_URL=https://clinicapi.arimini.in` (see `web/.env.production`)
-- PgBouncer in transaction mode on port 6432 (set `DATABASE_URL` accordingly)
-- PM2 runs a single API instance
-- See `deploy/` for configs
+---
 
-## Notes
+## 🔄 End-to-End Patient Flow
 
-- WhatsApp notifications excluded — `NotificationService` is a no-op stub
-- Payment gateway on hold — offline payment recording only
-- No self-registration for staff — accounts created by admin
+```mermaid
+graph LR
+    A[Patient Books Online / Walk-in] --> B[Reception Issues Token]
+    B --> C[Live Waiting Queue Display]
+    C --> D[Doctor Consult & Digital Rx]
+    D --> E[Pharmacy Dispenses Medicines]
+    E --> F[Settled Bill & Analytics Log]
+```
+
+1. **Patient** books slot online at `/book` or arrives as an OPD walk-in.
+2. **Receptionist** checks in patient and issues a live queue token.
+3. **Doctor** calls next token on their dashboard, logs diagnosis, and writes digital Rx.
+4. **Pharmacy Desk** receives real-time electronic prescription and dispenses medicines.
+5. **Admin Dashboard** reflects revenue, visit records, and doctor performance metrics instantly.
+
+---
+
+## 🌐 Production Deployment (VPS / Cloud)
+
+- **Patient Web App:** `https://clinic.arimini.in` (Nginx serving optimized Vite build)
+- **API Server:** `https://clinicapi.arimini.in` (Nginx reverse-proxying `/api` + `/socket.io` to Node.js / PM2)
+- **Database:** PostgreSQL cluster via PgBouncer in transaction pooling mode (port `6432`)
+- **Configs:** See `deploy/` for complete Nginx, PgBouncer, and PM2 ecosystem files.
+
+---
+
+## 🏢 Support & Commercial Inquiries
+
+Clinixa is engineered by **Arimini**. For custom multi-tenant white-label deployments, regional hospital rollouts, or integration support:
+
+- 🌐 **Website:** [arimini.in](https://www.arimini.in)
+- ✉️ **Email:** [hello@arimini.in](mailto:hello@arimini.in)
+- 📞 **Phone:** +91 94050 58496
+- 📍 **Headquarters:** Nagpur, Maharashtra, India
+
+---
+
+*© 2026 Clinixa · Engineered by Arimini. All rights reserved.*

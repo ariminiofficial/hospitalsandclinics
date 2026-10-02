@@ -30,7 +30,7 @@ export default function LoginPage() {
     <div className="login-page">
       <div className="login-card card">
         <div className="login-brand">
-          <div className="brand-mark">∞</div>
+          <div className="brand-mark">✚</div>
           <h1>{CLINIC.name}</h1>
           <p className="text-body-sm">Staff Portal</p>
         </div>
@@ -41,7 +41,7 @@ export default function LoginPage() {
           <button type="submit" className="btn btn-primary btn-block">Sign In</button>
         </form>
         <p className="text-body-sm" style={{ textAlign: 'center', marginTop: 16, color: 'var(--ink-soft)' }}>
-          Demo: admin@infinityclinic.com / Admin@123
+          Demo: admin@pulseclinic.demo / Admin@123
         </p>
         <p style={{ textAlign: 'center', marginTop: 24 }}><Link to="/">← Back to website</Link></p>
       </div>

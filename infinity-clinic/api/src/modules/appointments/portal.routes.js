@@ -31,7 +31,18 @@ router.get('/', requirePermission('appointments.view'), async (req, res, next) =
 
     const { rows } = await query(
       `SELECT a.*, p.full_name AS patient_name, p.phone AS patient_phone,
-              d.full_name AS doctor_name
+              d.full_name AS doctor_name, d.consultation_fee,
+              COALESCE(
+                (SELECT json_agg(json_build_object(
+                  'id', s.id,
+                  'service_id', s.service_id,
+                  'service_name', s.service_name,
+                  'price', s.price,
+                  'quantity', s.quantity,
+                  'notes', s.notes
+                )) FROM appointment_services s WHERE s.appointment_id = a.id),
+                '[]'::json
+              ) AS services
        FROM appointments a
        JOIN patients p ON p.id = a.patient_id
        JOIN doctors d ON d.id = a.doctor_id
@@ -69,17 +80,78 @@ router.post('/walk-in', requirePermission('appointments.walk_in'), async (req, r
 
     if (!patientId) throw new AppError('Patient required', 400, 'VALIDATION_ERROR');
 
-    const now = new Date();
-    const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    let inserted = false;
+    let apptResult;
+    let attempt = 0;
+    while (!inserted && attempt < 10) {
+      try {
+        const now = new Date(Date.now() + attempt * 1000);
+        const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+        apptResult = await query(
+          `INSERT INTO appointments (patient_id, doctor_id, appointment_date, appointment_time, status, booked_via, notes)
+           VALUES ($1, $2, CURRENT_DATE, $3, 'confirmed', 'walk_in', $4) RETURNING *`,
+          [patientId, data.doctorId, time, data.notes || null]
+        );
+        inserted = true;
+      } catch (e) {
+        if (e.code === '23505') {
+          attempt++;
+        } else {
+          throw e;
+        }
+      }
+    }
+    if (!apptResult?.rows?.[0]) throw new AppError('Could not allocate walk-in slot', 500, 'SLOT_ERROR');
+    const createdAppt = apptResult.rows[0];
 
-    const { rows } = await query(
-      `INSERT INTO appointments (patient_id, doctor_id, appointment_date, appointment_time, status, booked_via, notes)
-       VALUES ($1, $2, CURRENT_DATE, $3, 'confirmed', 'walk_in', $4) RETURNING *`,
-      [patientId, data.doctorId, time, data.notes || null]
-    );
-    res.status(201).json(rows[0]);
+    if (Array.isArray(data.services) && data.services.length > 0) {
+      for (const s of data.services) {
+        await query(
+          `INSERT INTO appointment_services (appointment_id, service_id, service_name, price, quantity, notes)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [createdAppt.id, s.serviceId || null, s.serviceName, s.price ?? 0, s.quantity || 1, s.notes || null]
+        );
+      }
+    }
+
+    res.status(201).json(createdAppt);
   } catch (err) {
     if (err instanceof z.ZodError) return next(new AppError('Invalid input', 400, 'VALIDATION_ERROR'));
+    next(err);
+  }
+});
+
+router.get('/:id/services', async (req, res, next) => {
+  try {
+    const { rows } = await query(
+      `SELECT * FROM appointment_services WHERE appointment_id = $1 ORDER BY created_at ASC`,
+      [req.params.id]
+    );
+    res.json(rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.put('/:id/services', async (req, res, next) => {
+  try {
+    const services = Array.isArray(req.body.services) ? req.body.services : [];
+    await query(`DELETE FROM appointment_services WHERE appointment_id = $1`, [req.params.id]);
+    for (const s of services) {
+      if (s.serviceName?.trim()) {
+        await query(
+          `INSERT INTO appointment_services (appointment_id, service_id, service_name, price, quantity, notes)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [req.params.id, s.serviceId || null, s.serviceName, s.price ?? 0, s.quantity || 1, s.notes || null]
+        );
+      }
+    }
+    const { rows } = await query(
+      `SELECT * FROM appointment_services WHERE appointment_id = $1 ORDER BY created_at ASC`,
+      [req.params.id]
+    );
+    res.json(rows);
+  } catch (err) {
     next(err);
   }
 });

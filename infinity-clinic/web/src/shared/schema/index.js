@@ -106,7 +106,12 @@ export const emptyTestimonialForm = () => ({
 export const emptyServiceForm = () => ({
   title: '',
   description: '',
+  price: 0,
+  category: 'General',
+  durationMinutes: 15,
   icon: '',
+  isPublished: true,
+  isActive: true,
 });
 
 /** DB column names returned by API (snake_case) — use when reading responses */
@@ -117,4 +122,6 @@ export const DbFields = {
   opdToken: ['id', 'appointment_id', 'doctor_id', 'visit_date', 'token_number', 'status'],
   consultation: ['id', 'appointment_id', 'doctor_id', 'patient_id', 'chief_complaint', 'diagnosis', 'notes'],
   payment: ['id', 'appointment_id', 'amount', 'method', 'status', 'paid_at'],
+  service: ['id', 'title', 'description', 'price', 'category', 'duration_minutes', 'icon', 'is_published', 'is_active', 'sort_order'],
+  appointmentService: ['id', 'appointment_id', 'service_id', 'service_name', 'price', 'quantity', 'notes'],
 };

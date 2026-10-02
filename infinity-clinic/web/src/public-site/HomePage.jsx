@@ -60,7 +60,7 @@ export default function HomePage() {
             <div>
               <div className="eyebrow">{home.specialistsEyebrow}</div>
               <h2>{home.specialistsTitle}</h2>
-              <p>{home.specialistsDesc.replace('Infinity Clinics', clinic.name)}</p>
+              <p>{home.specialistsDesc}</p>
             </div>
             <Link to="/doctors" className="btn btn-ghost">Meet all specialists →</Link>
           </div>
@@ -75,7 +75,7 @@ export default function HomePage() {
             ))}
           </div>
           <p className="preview-more reveal">
-            Also at this address: <Link to="/doctors#orthopaedics">Bone & Joint (Dr. Kolhe)</Link> · <Link to="/doctors#neurology">Neurology (Dr. Khandait)</Link>
+            Also at this address: <Link to="/doctors#orthopaedics">Bone & Joint (Dr. Kapoor)</Link> · <Link to="/doctors#neurology">Neurology (Dr. Sen)</Link>
           </p>
         </div>
       </section>

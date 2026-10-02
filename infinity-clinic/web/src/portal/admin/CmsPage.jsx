@@ -299,6 +299,7 @@ export default function CmsPage() {
   const [testimonialForm, setTestimonialForm] = useState(emptyTestimonialForm());
   const [saving, setSaving] = useState('');
   const [message, setMessage] = useState('');
+  const [editingService, setEditingService] = useState(null);
   const [viewService, setViewService] = useState(null);
   const [viewTestimonial, setViewTestimonial] = useState(null);
 
@@ -332,8 +333,27 @@ export default function CmsPage() {
 
   const addService = async (e) => {
     e.preventDefault();
-    await api.post('/portal/admin/cms/services', serviceForm);
+    await api.post('/portal/admin/cms/services', {
+      ...serviceForm,
+      price: Number(serviceForm.price) || 0,
+      durationMinutes: Number(serviceForm.durationMinutes) || 15,
+    });
     setServiceForm(emptyServiceForm());
+    load();
+  };
+
+  const updateService = async (e) => {
+    e.preventDefault();
+    if (!editingService?.id) return;
+    await api.put(`/portal/admin/cms/services/${editingService.id}`, {
+      ...editingService,
+      price: Number(editingService.price) || 0,
+      durationMinutes: Number(editingService.duration_minutes || editingService.durationMinutes) || 15,
+      sortOrder: Number(editingService.sort_order || editingService.sortOrder) || 0,
+      isPublished: editingService.is_published !== false && editingService.isPublished !== false,
+      isActive: editingService.is_active !== false && editingService.isActive !== false,
+    });
+    setEditingService(null);
     load();
   };
 
@@ -390,27 +410,119 @@ export default function CmsPage() {
       {tab === 'services' && (
         <div>
           <form onSubmit={addService} className="form card portal-form-card" style={{ marginBottom: 24 }}>
-            <h3 className="section-title">Add Service</h3>
-            <label>Title<input value={serviceForm.title} onChange={(e) => setServiceForm({ ...serviceForm, title: e.target.value })} required /></label>
-            <label>Description<textarea value={serviceForm.description} onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })} rows={2} /></label>
-            <label>Icon<input value={serviceForm.icon} onChange={(e) => setServiceForm({ ...serviceForm, icon: e.target.value })} placeholder="heart, ent, ortho…" /></label>
-            <button type="submit" className="btn btn-primary">Add Service</button>
+            <h3 className="section-title">Add Clinic Service / Diagnostic Test</h3>
+            <p className="text-body-sm" style={{ marginBottom: 12 }}>
+              Define services (e.g. Sugar test, BP test, MRI, ECG, Consultations, Procedures) with prices for doctor prescription &amp; reception billing.
+            </p>
+            <div className="grid-2-col" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
+              <label>Service Title / Test Name
+                <input
+                  value={serviceForm.title}
+                  onChange={(e) => setServiceForm({ ...serviceForm, title: e.target.value })}
+                  placeholder="e.g. Blood Sugar Test, BP Monitoring, MRI Brain, ECG..."
+                  required
+                />
+              </label>
+              <label>Price (₹)
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  value={serviceForm.price}
+                  onChange={(e) => setServiceForm({ ...serviceForm, price: e.target.value })}
+                  placeholder="0.00"
+                  required
+                />
+              </label>
+              <label>Category / Department
+                <select
+                  value={serviceForm.category}
+                  onChange={(e) => setServiceForm({ ...serviceForm, category: e.target.value })}
+                >
+                  <option value="Lab & Diagnostics">Lab &amp; Diagnostics (Sugar, CBC, Lipids...)</option>
+                  <option value="Vitals & Screening">Vitals &amp; Screening (BP, SpO2, BMI...)</option>
+                  <option value="Radiology & Scans">Radiology &amp; Scans (MRI, CT, X-Ray, USG...)</option>
+                  <option value="Cardiology">Cardiology (ECG, 2D-ECHO, TMT...)</option>
+                  <option value="ENT & Hearing">ENT &amp; Hearing (Endoscopy, Audiometry...)</option>
+                  <option value="Procedures">Procedures &amp; Minor OT (Dressing, Injection...)</option>
+                  <option value="General Consultation">General Consultation</option>
+                  <option value="General">General</option>
+                </select>
+              </label>
+              <label>Est. Duration (Minutes)
+                <input
+                  type="number"
+                  min="1"
+                  max="240"
+                  value={serviceForm.durationMinutes}
+                  onChange={(e) => setServiceForm({ ...serviceForm, durationMinutes: e.target.value })}
+                />
+              </label>
+            </div>
+            <label>Description &amp; Instructions
+              <textarea
+                value={serviceForm.description}
+                onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
+                rows={2}
+                placeholder="Brief clinical description, patient preparation instructions, or diagnostic scope..."
+              />
+            </label>
+            <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+              <label style={{ flex: 1 }}>Icon identifier
+                <input
+                  value={serviceForm.icon}
+                  onChange={(e) => setServiceForm({ ...serviceForm, icon: e.target.value })}
+                  placeholder="test, heart, scan, ent, ortho, general..."
+                />
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 20 }}>
+                <input
+                  type="checkbox"
+                  checked={serviceForm.isPublished !== false}
+                  onChange={(e) => setServiceForm({ ...serviceForm, isPublished: e.target.checked })}
+                />
+                Published on website
+              </label>
+            </div>
+            <button type="submit" className="btn btn-primary" style={{ marginTop: 8 }}>+ Add Service</button>
           </form>
+
           <div className="table-wrap">
             <table className="table">
-              <thead><tr><th>Title</th><th>Description</th><th>Order</th><th>Actions</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Duration</th>
+                  <th>Description</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
               <tbody>
                 {services.map((s) => (
                   <tr key={s.id}>
                     <td><strong>{s.title}</strong></td>
-                    <td className="text-body-sm">{s.description}</td>
-                    <td>{s.sort_order}</td>
+                    <td><span className="badge badge-secondary">{s.category || 'General'}</span></td>
+                    <td><strong className="text-primary">₹{Number(s.price || 0).toLocaleString('en-IN')}</strong></td>
+                    <td>{s.duration_minutes || s.durationMinutes || 15} mins</td>
+                    <td className="text-body-sm" style={{ maxWidth: 260 }}>{s.description || '—'}</td>
+                    <td>
+                      <span className={`status-pill ${s.is_published !== false ? 'status-pill-confirmed' : 'status-pill-pending'}`}>
+                        {s.is_published !== false ? 'Published' : 'Draft'}
+                      </span>
+                    </td>
                     <td className="actions-cell row-actions">
                       <button type="button" className="btn btn-sm btn-outline" onClick={() => setViewService(s)}>View</button>
+                      <button type="button" className="btn btn-sm btn-secondary" onClick={() => setEditingService({ ...s, durationMinutes: s.duration_minutes || 15, sortOrder: s.sort_order || 0 })}>Edit</button>
                       <button type="button" className="btn btn-sm btn-danger" onClick={() => api.delete(`/portal/admin/cms/services/${s.id}`).then(load)}>Delete</button>
                     </td>
                   </tr>
                 ))}
+                {services.length === 0 && (
+                  <tr><td colSpan={7}>No services configured yet. Add your first service above.</td></tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -447,13 +559,109 @@ export default function CmsPage() {
         </div>
       )}
 
+      <Modal open={!!editingService} onClose={() => setEditingService(null)} title="Edit Service & Price">
+        {editingService && (
+          <form className="form" onSubmit={updateService}>
+            <label>Title
+              <input
+                value={editingService.title || ''}
+                onChange={(e) => setEditingService({ ...editingService, title: e.target.value })}
+                required
+              />
+            </label>
+            <div className="grid-2-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <label>Price (₹)
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  value={editingService.price ?? 0}
+                  onChange={(e) => setEditingService({ ...editingService, price: e.target.value })}
+                  required
+                />
+              </label>
+              <label>Category
+                <select
+                  value={editingService.category || 'General'}
+                  onChange={(e) => setEditingService({ ...editingService, category: e.target.value })}
+                >
+                  <option value="Lab & Diagnostics">Lab &amp; Diagnostics</option>
+                  <option value="Vitals & Screening">Vitals &amp; Screening</option>
+                  <option value="Radiology & Scans">Radiology &amp; Scans</option>
+                  <option value="Cardiology">Cardiology</option>
+                  <option value="ENT & Hearing">ENT &amp; Hearing</option>
+                  <option value="Procedures">Procedures</option>
+                  <option value="General Consultation">General Consultation</option>
+                  <option value="General">General</option>
+                </select>
+              </label>
+            </div>
+            <div className="grid-2-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <label>Duration (mins)
+                <input
+                  type="number"
+                  value={editingService.duration_minutes ?? editingService.durationMinutes ?? 15}
+                  onChange={(e) => setEditingService({ ...editingService, duration_minutes: e.target.value })}
+                />
+              </label>
+              <label>Sort Order
+                <input
+                  type="number"
+                  value={editingService.sort_order ?? editingService.sortOrder ?? 0}
+                  onChange={(e) => setEditingService({ ...editingService, sort_order: e.target.value })}
+                />
+              </label>
+            </div>
+            <label>Description
+              <textarea
+                value={editingService.description || ''}
+                onChange={(e) => setEditingService({ ...editingService, description: e.target.value })}
+                rows={3}
+              />
+            </label>
+            <label>Icon Identifier
+              <input
+                value={editingService.icon || ''}
+                onChange={(e) => setEditingService({ ...editingService, icon: e.target.value })}
+              />
+            </label>
+            <div style={{ display: 'flex', gap: 16, margin: '8px 0' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  type="checkbox"
+                  checked={editingService.is_published !== false && editingService.isPublished !== false}
+                  onChange={(e) => setEditingService({ ...editingService, is_published: e.target.checked, isPublished: e.target.checked })}
+                />
+                Published
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  type="checkbox"
+                  checked={editingService.is_active !== false && editingService.isActive !== false}
+                  onChange={(e) => setEditingService({ ...editingService, is_active: e.target.checked, isActive: e.target.checked })}
+                />
+                Active for selection
+              </label>
+            </div>
+            <div className="modal-footer-actions">
+              <button type="submit" className="btn btn-primary">Save Changes</button>
+              <button type="button" className="btn btn-secondary" onClick={() => setEditingService(null)}>Cancel</button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
       <Modal open={!!viewService} onClose={() => setViewService(null)} title="Service Details">
         {viewService && (
           <>
             <DetailDl items={[
               { label: 'Title', value: viewService.title },
-              { label: 'Description', value: viewService.description },
+              { label: 'Category', value: viewService.category || 'General' },
+              { label: 'Price', value: `₹${Number(viewService.price || 0).toLocaleString('en-IN')}` },
+              { label: 'Duration', value: `${viewService.duration_minutes || viewService.durationMinutes || 15} minutes` },
+              { label: 'Description', value: viewService.description || '—' },
               { label: 'Icon', value: viewService.icon || '—' },
+              { label: 'Published', value: viewService.is_published !== false ? 'Yes' : 'No' },
               { label: 'Sort order', value: viewService.sort_order },
             ]} />
             <div className="modal-footer-actions">

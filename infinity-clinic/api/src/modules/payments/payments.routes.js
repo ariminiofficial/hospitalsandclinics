@@ -19,6 +19,19 @@ router.post('/:appointmentId/record-offline', requirePermission('payments.record
     const { rows: appts } = await query('SELECT id FROM appointments WHERE id = $1', [appointmentId]);
     if (appts.length === 0) throw new AppError('Appointment not found', 404, 'NOT_FOUND');
 
+    if (Array.isArray(data.services)) {
+      await query(`DELETE FROM appointment_services WHERE appointment_id = $1`, [appointmentId]);
+      for (const s of data.services) {
+        if (s.serviceName?.trim()) {
+          await query(
+            `INSERT INTO appointment_services (appointment_id, service_id, service_name, price, quantity, notes)
+             VALUES ($1, $2, $3, $4, $5, $6)`,
+            [appointmentId, s.serviceId || null, s.serviceName, s.price ?? 0, s.quantity || 1, s.notes || null]
+          );
+        }
+      }
+    }
+
     const { rows } = await query(
       `INSERT INTO payments (appointment_id, amount, method, status, recorded_by, paid_at)
        VALUES ($1, $2, $3, 'completed', $4, NOW())
@@ -40,7 +53,7 @@ router.get('/:appointmentId/receipt', requirePermission('payments.receipt'), asy
     const { rows } = await query(
       `SELECT pay.*, a.appointment_date, a.appointment_time,
               p.full_name AS patient_name, p.phone AS patient_phone,
-              d.full_name AS doctor_name,
+              d.full_name AS doctor_name, d.consultation_fee,
               u.email AS recorded_by_email,
               cs.value AS clinic_name
        FROM payments pay
@@ -54,13 +67,19 @@ router.get('/:appointmentId/receipt', requirePermission('payments.receipt'), asy
     );
     if (!rows[0]) throw new AppError('Payment not found', 404, 'NOT_FOUND');
 
+    const { rows: services } = await query(
+      `SELECT * FROM appointment_services WHERE appointment_id = $1 ORDER BY created_at ASC`,
+      [req.params.appointmentId]
+    );
+
     const { rows: contact } = await query(
       `SELECT content FROM website_content WHERE section_key = 'contact'`
     );
 
     res.json({
       ...rows[0],
-      clinic_name: rows[0].clinic_name || 'Infinity Clinic',
+      services,
+      clinic_name: rows[0].clinic_name || 'Pulse Multi-Specialty Clinic',
       contact: contact[0]?.content || {},
     });
   } catch (err) {

@@ -90,7 +90,7 @@ function PublicLayoutInner() {
       <header ref={headerRef}>
         <div className="nav wrap">
           <Link to="/" className="brand" onClick={closeMenu}>
-            <div className="brand-mark">∞</div>
+            <div className="brand-mark">✚</div>
             <div>
               <div className="brand-name">{clinic.name}</div>
               <div className="brand-sub">{clinic.tagline}</div>
@@ -131,12 +131,12 @@ function PublicLayoutInner() {
             <div>
               <h4>Visit</h4>
               <a href={`tel:+91${clinic.phone}`}>{clinic.phoneDisplay}</a>
-              <Link to="/contact">Manewada Ring Road, Omkar Nagar</Link>
+              <Link to="/contact">Central Avenue, Metro Health Park</Link>
               <Link to="/book">Book appointment online</Link>
             </div>
           </div>
           <div className="foot-bottom">
-            <span>© {new Date().getFullYear()} {clinic.name}, Nagpur</span>
+            <span>© {new Date().getFullYear()} {clinic.name}</span>
             <span>{footer.disclaimer}</span>
           </div>
         </div>

@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { query, withTransaction } from '../../config/db.js';
+import { redis } from '../../config/redis.js';
 import { authenticate, authorize } from '../../middleware/auth.js';
 import { requirePermission } from '../../middleware/permissions.js';
 import { AppError } from '../../middleware/errorHandler.js';
 import { prescriptionInput, prescriptionItemToDb } from '../../schema/index.js';
 import { upsertMedicineTemplates } from './templates.service.js';
+import { publishPharmacyUpdate } from '../../realtime/pharmacyChannel.js';
 
 const router = Router();
 
@@ -42,6 +44,8 @@ router.post('/consultation/:consultationId', requirePermission('prescriptions.wr
       return res.status(403).json({ error: 'Doctor profile not found' });
     }
 
+    const targetPharmacyStatus = data.pharmacyStatus || (data.sendToPharmacy ? 'pending' : null);
+
     const result = await withTransaction(async (client) => {
       const { rows: consults } = await client.query(
         'SELECT doctor_id, patient_id FROM consultations WHERE id = $1',
@@ -50,20 +54,25 @@ router.post('/consultation/:consultationId', requirePermission('prescriptions.wr
       if (!consults[0]) throw new AppError('Consultation not found', 404, 'NOT_FOUND');
 
       const { rows: existing } = await client.query(
-        'SELECT id FROM prescriptions WHERE consultation_id = $1',
+        'SELECT id, pharmacy_status FROM prescriptions WHERE consultation_id = $1',
         [req.params.consultationId]
       );
 
       let prescriptionId;
       if (existing.length > 0) {
         prescriptionId = existing[0].id;
-        await client.query('UPDATE prescriptions SET advice = $1 WHERE id = $2', [data.advice || null, prescriptionId]);
+        const newStatus = targetPharmacyStatus || existing[0].pharmacy_status;
+        await client.query(
+          'UPDATE prescriptions SET advice = $1, pharmacy_status = $2 WHERE id = $3',
+          [data.advice || null, newStatus, prescriptionId]
+        );
         await client.query('DELETE FROM prescription_items WHERE prescription_id = $1', [prescriptionId]);
       } else {
+        const initialStatus = targetPharmacyStatus || 'pending';
         const { rows: created } = await client.query(
-          `INSERT INTO prescriptions (consultation_id, doctor_id, patient_id, advice)
-           VALUES ($1, $2, $3, $4) RETURNING id`,
-          [req.params.consultationId, consults[0].doctor_id, consults[0].patient_id, data.advice || null]
+          `INSERT INTO prescriptions (consultation_id, doctor_id, patient_id, advice, pharmacy_status)
+           VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+          [req.params.consultationId, consults[0].doctor_id, consults[0].patient_id, data.advice || null, initialStatus]
         );
         prescriptionId = created[0].id;
       }
@@ -92,6 +101,13 @@ router.post('/consultation/:consultationId', requirePermission('prescriptions.wr
       return { ...prescription[0], items };
     });
 
+    if (result.pharmacy_status === 'pending') {
+      await publishPharmacyUpdate(redis, {
+        type: 'new_prescription',
+        prescriptionIds: [result.id],
+      });
+    }
+
     res.status(201).json(result);
   } catch (err) {
     if (err instanceof z.ZodError) return next(new AppError('Invalid input', 400, 'VALIDATION_ERROR'));
@@ -105,7 +121,7 @@ router.get('/:id/print', requirePermission('prescriptions.print'), async (req, r
       `SELECT p.*, d.full_name AS doctor_name, d.specialization, d.qualification,
               pat.full_name AS patient_name, pat.phone AS patient_phone,
               pat.date_of_birth, pat.gender,
-              c.chief_complaint, c.diagnosis,
+              c.chief_complaint, c.diagnosis, c.appointment_id,
               cs.value AS clinic_name
        FROM prescriptions p
        JOIN doctors d ON d.id = p.doctor_id
@@ -122,15 +138,21 @@ router.get('/:id/print', requirePermission('prescriptions.print'), async (req, r
       [req.params.id]
     );
 
+    const { rows: services } = await query(
+      `SELECT * FROM appointment_services WHERE appointment_id = $1 ORDER BY created_at ASC`,
+      [rows[0].appointment_id]
+    );
+
     const { rows: contact } = await query(
       `SELECT content FROM website_content WHERE section_key = 'contact'`
     );
 
     res.json({
       ...rows[0],
-      clinic_name: rows[0].clinic_name || 'Infinity Clinic',
+      clinic_name: rows[0].clinic_name || 'Pulse Multi-Specialty Clinic',
       contact: contact[0]?.content || {},
       items,
+      services,
     });
   } catch (err) {
     next(err);

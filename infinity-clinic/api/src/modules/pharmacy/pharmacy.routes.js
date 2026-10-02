@@ -40,7 +40,7 @@ const PRESCRIPTION_SELECT = `
   JOIN patients pat ON pat.id = p.patient_id
   JOIN doctors d ON d.id = p.doctor_id
   JOIN consultations c ON c.id = p.consultation_id
-  JOIN appointments a ON a.id = c.appointment_id
+  LEFT JOIN appointments a ON a.id = c.appointment_id
   LEFT JOIN opd_tokens ot ON ot.appointment_id = a.id
 `;
 
@@ -52,7 +52,6 @@ router.get('/queue', requirePermission('pharmacy.view_queue'), async (req, res, 
     const { rows } = await query(
       `${PRESCRIPTION_SELECT}
        WHERE p.pharmacy_status IN ('pending', 'dispensing')
-         AND a.status = 'completed'
        ORDER BY p.created_at ASC
        LIMIT 100`
     );

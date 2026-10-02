@@ -40,7 +40,7 @@ export default function ContactPage() {
               <p className="text-body-sm">Call ahead to confirm the specialist&apos;s timing for your visit day</p>
             </div>
             <div className="timing-card timing-card-highlight">
-              <h3>Neurology — Dr. Khandait</h3>
+              <h3>Neurology — Dr. Sen</h3>
               <p>Monday – Saturday</p>
               <p className="timing-detail">{clinic.neuroTiming}</p>
               <p className="text-body-sm">Ideal for working professionals who cannot visit during the day</p>
@@ -65,11 +65,11 @@ export default function ContactPage() {
           <div className="directions-grid reveal">
             <div className="direction-card">
               <h3>Landmark</h3>
-              <p>{clinic.landmark}. Look for the white board with the teal infinity mark at the gate.</p>
+              <p>{clinic.landmark}. Look for the main entrance sign at the gate.</p>
             </div>
             <div className="direction-card">
-              <h3>From Manewada</h3>
-              <p>{clinic.directionsFrom || 'Head towards Omkar Nagar on Manewada Ring Road.'}</p>
+              <h3>Directions</h3>
+              <p>{clinic.directionsFrom || 'Located on Central Avenue at Metro Health Park, opposite Metro Central Station.'}</p>
             </div>
             <div className="direction-card">
               <h3>Parking</h3>

@@ -46,7 +46,7 @@ router.put('/content/:sectionKey', async (req, res, next) => {
 // Services
 router.get('/services', async (req, res, next) => {
   try {
-    const { rows } = await query('SELECT * FROM services ORDER BY sort_order, title');
+    const { rows } = await query('SELECT * FROM services ORDER BY category, sort_order, title');
     res.json(rows);
   } catch (err) {
     next(err);
@@ -59,9 +59,19 @@ router.post('/services', async (req, res, next) => {
   try {
     const data = serviceSchema.parse(req.body);
     const { rows } = await query(
-      `INSERT INTO services (title, description, icon, is_published, sort_order)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [data.title, data.description || null, data.icon || null, data.isPublished !== false, data.sortOrder || 0]
+      `INSERT INTO services (title, description, price, category, duration_minutes, icon, is_published, is_active, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [
+        data.title,
+        data.description || null,
+        data.price ?? 0,
+        data.category || 'General',
+        data.durationMinutes ?? 15,
+        data.icon || null,
+        data.isPublished !== false,
+        data.isActive !== false,
+        data.sortOrder || 0,
+      ]
     );
     await invalidateCmsCache();
     res.status(201).json(rows[0]);
@@ -75,9 +85,29 @@ router.put('/services/:id', async (req, res, next) => {
   try {
     const data = serviceSchema.parse(req.body);
     const { rows } = await query(
-      `UPDATE services SET title = $1, description = $2, icon = $3, is_published = $4, sort_order = $5
-       WHERE id = $6 RETURNING *`,
-      [data.title, data.description || null, data.icon || null, data.isPublished !== false, data.sortOrder || 0, req.params.id]
+      `UPDATE services SET
+         title = $1,
+         description = $2,
+         price = $3,
+         category = $4,
+         duration_minutes = $5,
+         icon = $6,
+         is_published = $7,
+         is_active = $8,
+         sort_order = $9
+       WHERE id = $10 RETURNING *`,
+      [
+        data.title,
+        data.description || null,
+        data.price ?? 0,
+        data.category || 'General',
+        data.durationMinutes ?? 15,
+        data.icon || null,
+        data.isPublished !== false,
+        data.isActive !== false,
+        data.sortOrder || 0,
+        req.params.id,
+      ]
     );
     if (!rows[0]) throw new AppError('Service not found', 404, 'NOT_FOUND');
     await invalidateCmsCache();

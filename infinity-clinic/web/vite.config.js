@@ -6,9 +6,9 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': 'https://clinic.arimini.in',
+      '/api': 'http://127.0.0.1:4000',
       '/socket.io': {
-        target: 'https://clinic.arimini.in',
+        target: 'http://127.0.0.1:4000',
         ws: true,
       },
     },
