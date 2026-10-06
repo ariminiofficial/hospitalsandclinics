@@ -147,7 +147,7 @@ export default function ReceptionistDashboard() {
         </section>
       </div>
 
-      <Modal open={!!viewPatient} onClose={() => setViewPatient(null)} title="Patient in Queue">
+      <Modal open={!!viewPatient} onClose={() => setViewPatient(null)} title="Patient in Queue" size="md">
         {viewPatient && (
           <>
             <DetailDl

@@ -10,7 +10,7 @@ export default function VisitDetailModal({ visit, onClose, onPrintRx, patientLin
   const patientLink = visit.patient_id && patientLinkPrefix ? `${patientLinkPrefix}/${visit.patient_id}` : null;
 
   return (
-    <Modal open onClose={onClose} title="Visit Details">
+    <Modal open onClose={onClose} title="Visit Details" size="lg">
       <DetailDl
         items={[
           { label: 'Patient', value: patientLink ? <Link to={patientLink}>{visit.patient_name}</Link> : visit.patient_name },

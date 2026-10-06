@@ -114,7 +114,11 @@ export default function BookPage() {
     return (
       <div className="page-inner wrap">
         <div className="success-screen">
-          <div className="success-icon">✓</div>
+          <div className="success-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
           <h1>Appointment Confirmed</h1>
           <p className="lede" style={{ margin: '16px auto' }}>
             {selectedDoctor?.full_name} · {form.appointmentDate} at {form.appointmentTime}

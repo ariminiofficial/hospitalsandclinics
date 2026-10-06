@@ -28,6 +28,7 @@ import SettingsPage from './portal/admin/SettingsPage.jsx';
 import PharmacyDashboard from './portal/pharmacy/PharmacyDashboard.jsx';
 import PharmacyHistoryPage from './portal/pharmacy/PharmacyHistoryPage.jsx';
 import PermissionsPage from './portal/admin/PermissionsPage.jsx';
+import PaymentAuditPage from './portal/admin/PaymentAuditPage.jsx';
 import './styles.css';
 
 export default function App() {
@@ -52,6 +53,7 @@ export default function App() {
             <Route path="patients" element={<PatientsPage />} />
             <Route path="appointments" element={<ReceptionistAppointmentsPage />} />
             <Route path="walk-in" element={<WalkInPage />} />
+            <Route path="payment-audit" element={<PaymentAuditPage />} />
           </Route>
 
           <Route path="/portal/doctor" element={<PortalLayout allowedRoles={['doctor', 'admin']} />}>
@@ -69,6 +71,7 @@ export default function App() {
 
           <Route path="/portal/admin" element={<PortalLayout allowedRoles={['admin']} />}>
             <Route index element={<AdminDashboard />} />
+            <Route path="payment-audit" element={<PaymentAuditPage />} />
             <Route path="doctors" element={<AdminDoctorsPage />} />
             <Route path="receptionists" element={<ReceptionistsPage />} />
             <Route path="appointments" element={<AdminAppointmentsPage />} />

@@ -77,7 +77,7 @@ export default function ReceptionistsPage() {
         </table>
       </div>
 
-      <Modal open={!!viewReceptionist} onClose={() => setViewReceptionist(null)} title="Receptionist Details">
+      <Modal open={!!viewReceptionist} onClose={() => setViewReceptionist(null)} title="Receptionist Details" size="md">
         {viewReceptionist && (
           <>
             <DetailDl
@@ -94,12 +94,21 @@ export default function ReceptionistsPage() {
         )}
       </Modal>
 
-      <Modal open={showForm} onClose={() => setShowForm(false)} title="Add Receptionist">
+      <Modal open={showForm} onClose={() => setShowForm(false)} title="Add New Receptionist" size="md">
         <form onSubmit={handleCreate} className="form">
-          <label>Email<input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required /></label>
-          <label>Password<input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} /></label>
-          <label>Full Name<input value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} required /></label>
-          <button type="submit" className="btn btn-primary">Create</button>
+          <label>Email Address
+            <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required placeholder="receptionist@clinic.com" />
+          </label>
+          <label>Account Password
+            <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} placeholder="••••••••" />
+          </label>
+          <label>Staff Full Name
+            <input value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} required placeholder="Front Desk Officer" />
+          </label>
+          <div className="modal-footer-actions">
+            <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button>
+            <button type="submit" className="btn btn-primary">+ Create Receptionist</button>
+          </div>
         </form>
       </Modal>
     </div>

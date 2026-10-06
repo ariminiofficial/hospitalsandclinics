@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../shared/auth/AuthContext.jsx';
 import { CLINIC } from '../public-site/clinicData.js';
+import PoweredByArimini from '../shared/components/PoweredByArimini.jsx';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -30,7 +31,11 @@ export default function LoginPage() {
     <div className="login-page">
       <div className="login-card card">
         <div className="login-brand">
-          <div className="brand-mark">✚</div>
+          <div className="brand-mark">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+            </svg>
+          </div>
           <h1>{CLINIC.name}</h1>
           <p className="text-body-sm">Staff Portal</p>
         </div>
@@ -45,6 +50,7 @@ export default function LoginPage() {
         </p>
         <p style={{ textAlign: 'center', marginTop: 24 }}><Link to="/">← Back to website</Link></p>
       </div>
+      <PoweredByArimini className="login-sticky-footer" />
     </div>
   );
 }

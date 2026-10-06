@@ -40,10 +40,16 @@ export default function DoctorDashboard() {
 
   useQueueSocket(doctorId, setQueue, { queueUrl: queueUrl || undefined });
 
+  const [lastCompletedRxId, setLastCompletedRxId] = useState(null);
+  const [lastCompletedPatient, setLastCompletedPatient] = useState('');
+  const [actionError, setActionError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
   useEffect(() => {
     setActiveToken(null);
     setConsultation(null);
     setCompletionNote('');
+    setLastCompletedRxId(null);
     setQueue([]);
     setServices([]);
   }, [doctorId]);
@@ -57,31 +63,9 @@ export default function DoctorDashboard() {
     return statusOk && searchOk;
   }), [queue, queueSearch, queueStatus]);
 
-  const handleCall = async (token) => {
-    await api.post(`/portal/consultations/tokens/${token.id}/call`);
-    refreshQueue();
-  };
-
-  const handleSkip = async (token) => {
-    await api.post(`/portal/consultations/tokens/${token.id}/skip`);
-    if (activeToken?.id === token.id) {
-      setActiveToken(null);
-      setConsultation(null);
-      setServices([]);
-    }
-    refreshQueue();
-  };
-
-  const handleStart = async (token) => {
-    setCompletionNote('');
-    const result = await api.post(`/portal/consultations/tokens/${token.id}/start`);
-    setActiveToken(token);
-    setConsultation(result.consultation);
-    setNotes(emptyConsultationNotes());
-    setPrescriptionId(null);
-
+  const loadConsultationData = async (consultId) => {
     try {
-      const consultDetail = await api.get(`/portal/consultations/${result.consultation.id}`);
+      const consultDetail = await api.get(`/portal/consultations/${consultId}`);
       if (consultDetail) {
         setNotes({
           chiefComplaint: consultDetail.chief_complaint || '',
@@ -104,36 +88,95 @@ export default function DoctorDashboard() {
       setServices([]);
     }
 
-    const existing = await api.get(`/portal/prescriptions/consultation/${result.consultation.id}`);
-    if (existing) {
-      setPrescription({
-        advice: existing.advice || '',
-        items: existing.items?.length
-          ? existing.items.map((i) => normalizePrescriptionItem(i))
-          : [emptyPrescriptionItem()],
-      });
-      setPrescriptionId(existing.id);
-    } else {
+    try {
+      const existing = await api.get(`/portal/prescriptions/consultation/${consultId}`);
+      if (existing) {
+        setPrescription({
+          advice: existing.advice || '',
+          items: existing.items?.length
+            ? existing.items.map((i) => normalizePrescriptionItem(i))
+            : [emptyPrescriptionItem()],
+        });
+        setPrescriptionId(existing.id);
+      } else {
+        setPrescription({ advice: '', items: [emptyPrescriptionItem()] });
+        setPrescriptionId(null);
+      }
+    } catch (e) {
       setPrescription({ advice: '', items: [emptyPrescriptionItem()] });
+      setPrescriptionId(null);
+    }
+  };
+
+  // Automatically sync active consultation if in_consultation token exists
+  useEffect(() => {
+    if (current && (!consultation || consultation.appointment_id !== current.appointment_id)) {
+      api.post(`/portal/consultations/tokens/${current.id}/start`)
+        .then((result) => {
+          setActiveToken(current);
+          setConsultation(result.consultation);
+          if (result.consultation?.id) {
+            loadConsultationData(result.consultation.id);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [current?.id, doctorId]);
+
+  const handleCall = async (token) => {
+    await api.post(`/portal/consultations/tokens/${token.id}/call`);
+    refreshQueue();
+  };
+
+  const handleSkip = async (token) => {
+    await api.post(`/portal/consultations/tokens/${token.id}/skip`);
+    if (activeToken?.id === token.id) {
+      setActiveToken(null);
+      setConsultation(null);
+      setServices([]);
     }
     refreshQueue();
   };
 
-  const [actionError, setActionError] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
+  const handleStart = async (token) => {
+    setCompletionNote('');
+    setLastCompletedRxId(null);
+    setActionError('');
+    const result = await api.post(`/portal/consultations/tokens/${token.id}/start`);
+    setActiveToken(token);
+    setConsultation(result.consultation);
+    setNotes(emptyConsultationNotes());
+    setPrescriptionId(null);
+
+    if (result.consultation?.id) {
+      await loadConsultationData(result.consultation.id);
+    }
+    refreshQueue();
+  };
 
   const savePrescription = async (sendImmediately = true) => {
-    if (!consultation?.id) return null;
+    let activeConsultId = consultation?.id;
+    if (!activeConsultId && (current || activeToken)) {
+      const tok = current || activeToken;
+      const res = await api.post(`/portal/consultations/tokens/${tok.id}/start`);
+      activeConsultId = res.consultation?.id;
+      setConsultation(res.consultation);
+    }
+    if (!activeConsultId) {
+      setActionError('No active consultation selected.');
+      return null;
+    }
+
     setActionError('');
     setIsSaving(true);
     try {
-      await api.put(`/portal/consultations/${consultation.id}`, {
+      await api.put(`/portal/consultations/${activeConsultId}`, {
         ...notes,
         services,
       });
       const filledItems = prescription.items.filter((i) => i.medicineName?.trim());
       if (filledItems.length) {
-        const rx = await api.post(`/portal/prescriptions/consultation/${consultation.id}`, {
+        const rx = await api.post(`/portal/prescriptions/consultation/${activeConsultId}`, {
           advice: prescription.advice,
           items: filledItems,
           pharmacyStatus: sendImmediately ? 'pending' : 'draft',
@@ -141,47 +184,78 @@ export default function DoctorDashboard() {
         });
         setPrescriptionId(rx.id);
         if (sendImmediately) {
-          setCompletionNote('Prescription and services saved; sent to pharmacy queue.');
+          setCompletionNote('Prescription & diagnostic orders saved and dispatched to pharmacy queue.');
         } else {
-          setCompletionNote('Prescription draft & services saved.');
+          setCompletionNote('Prescription draft & diagnostic orders saved.');
         }
         return rx;
       } else {
-        setCompletionNote('Consultation notes & ordered services saved.');
+        setCompletionNote('Consultation notes & ordered diagnostic services saved.');
         return null;
       }
     } catch (err) {
-      setActionError(err.message || 'Failed to save prescription');
+      setActionError(err.message || 'Failed to save consultation details');
       return null;
     } finally {
       setIsSaving(false);
     }
   };
 
+  const handlePrintRx = async () => {
+    if (prescriptionId) {
+      setShowPrint(true);
+      return;
+    }
+    const rx = await savePrescription(false);
+    if (rx?.id) {
+      setPrescriptionId(rx.id);
+      setShowPrint(true);
+    } else {
+      setActionError('Please add at least one medication to preview/print the prescription.');
+    }
+  };
+
   const completeConsultation = async () => {
-    if (!consultation?.id) return;
+    let activeConsultId = consultation?.id;
+    if (!activeConsultId && (current || activeToken)) {
+      const tok = current || activeToken;
+      const res = await api.post(`/portal/consultations/tokens/${tok.id}/start`);
+      activeConsultId = res.consultation?.id;
+      setConsultation(res.consultation);
+    }
+    if (!activeConsultId) {
+      setActionError('No active consultation selected to complete.');
+      return;
+    }
+
+    const currentPatientName = (current || activeToken)?.patient_name || 'Patient';
     setActionError('');
     setIsSaving(true);
     try {
-      await api.put(`/portal/consultations/${consultation.id}`, {
+      await api.put(`/portal/consultations/${activeConsultId}`, {
         ...notes,
         services,
       });
       const filledItems = prescription.items.filter((i) => i.medicineName?.trim());
+      let savedRxId = null;
       if (filledItems.length) {
-        const rx = await api.post(`/portal/prescriptions/consultation/${consultation.id}`, {
+        const rx = await api.post(`/portal/prescriptions/consultation/${activeConsultId}`, {
           advice: prescription.advice,
           items: filledItems,
           pharmacyStatus: 'pending',
           sendToPharmacy: true,
         });
+        savedRxId = rx.id;
         setPrescriptionId(rx.id);
       }
-      await api.post(`/portal/consultations/${consultation.id}/complete`);
+      await api.post(`/portal/consultations/${activeConsultId}/complete`);
+      
+      setLastCompletedRxId(savedRxId);
+      setLastCompletedPatient(currentPatientName);
       setCompletionNote(
         filledItems.length
-          ? 'Visit completed. Prescription sent to pharmacy and services billed.'
-          : 'Visit completed. Clinical notes and ordered services saved.',
+          ? `Visit for ${currentPatientName} completed successfully. Prescription sent to pharmacy.`
+          : `Visit for ${currentPatientName} completed successfully. Clinical notes & services saved.`
       );
       setActiveToken(null);
       setConsultation(null);
@@ -231,7 +305,24 @@ export default function DoctorDashboard() {
       </PortalHeader>
 
       {actionError && <div className="alert-error" style={{ marginBottom: 16 }}>{actionError}</div>}
-      {completionNote && <div className="alert-success" style={{ marginBottom: 16 }}>{completionNote}</div>}
+      {completionNote && (
+        <div className="alert-success" style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <span>{completionNote}</span>
+          {lastCompletedRxId && (
+            <button
+              type="button"
+              className="btn btn-sm btn-primary"
+              onClick={() => {
+                setPrescriptionId(lastCompletedRxId);
+                setShowPrint(true);
+              }}
+              style={{ fontWeight: 700 }}
+            >
+              Print Prescription ({lastCompletedPatient})
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="bento-grid">
         <section className="bento-main">
@@ -305,11 +396,14 @@ export default function DoctorDashboard() {
                     {isSaving ? 'Saving...' : 'Send Rx to Pharmacy'}
                   </button>
                 )}
-                {prescriptionId && (
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowPrint(true)} disabled={isSaving}>
-                    Print Rx
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handlePrintRx}
+                  disabled={isSaving}
+                >
+                  Print Prescription (Rx)
+                </button>
               </div>
               <p className="text-body-sm rx-optional-hint" style={{ marginTop: 8 }}>
                 Prescription is optional. If you add no medicines, the visit still completes and pharmacy is not notified.
@@ -380,7 +474,11 @@ export default function DoctorDashboard() {
 
       <div className="stats-row">
         <div className="stat-card">
-          <div className="stat-icon">✓</div>
+          <div className="stat-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
           <MetricCard
             value={queue.filter((t) => t.status === 'completed').length}
             label={METRIC_HELP.queueCompleted.label}

@@ -22,7 +22,7 @@ export default function AppointmentDetailModal({ appointment, onClose, patientLi
   ) : null;
 
   return (
-    <Modal open onClose={onClose} title="Appointment Details">
+    <Modal open onClose={onClose} title="Appointment Details" size="md">
       <DetailDl
         items={[
           { label: 'Patient', value: patientLink ? <Link to={patientLink}>{appointment.patient_name}</Link> : appointment.patient_name },

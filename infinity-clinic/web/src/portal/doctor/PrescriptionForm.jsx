@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { api } from '../../shared/api/client.js';
 import {
   DOSE_OPTIONS,
@@ -22,9 +22,112 @@ function templateLabel(item) {
   return parts.join(' · ');
 }
 
+function MedicineAutocompleteInput({
+  value,
+  onChange,
+  onSelectTemplate,
+  onToggleFavorite,
+  templates = [],
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef(null);
+
+  const filterText = (value || '').trim().toLowerCase();
+  const filtered = templates.filter((t) => {
+    if (!filterText) return true;
+    return (t.medicineName || '').toLowerCase().includes(filterText);
+  }).slice(0, 12);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="rx-autocomplete-wrapper" ref={wrapperRef}>
+      <input
+        type="text"
+        placeholder="Type medicine name (e.g. Paracetamol, Augmentin, Pan 40)..."
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value);
+          setIsOpen(true);
+        }}
+        onFocus={() => setIsOpen(true)}
+      />
+      {isOpen && (
+        <div className="rx-autocomplete-dropdown">
+          <div className="rx-autocomplete-header">
+            {filterText ? `Matching Medicines (${filtered.length})` : 'Medicine Formulary & Suggestions'}
+          </div>
+          {filtered.length > 0 ? (
+            filtered.map((t, idx) => (
+              <div
+                key={t.id || idx}
+                className={`rx-autocomplete-item ${t.isFavorite ? 'favorite' : t.isFormulary ? 'formulary' : ''}`}
+                onMouseDown={(e) => {
+                  if (e.target.closest('.rx-fav-star-btn')) return;
+                  e.preventDefault();
+                  onSelectTemplate(t);
+                  setIsOpen(false);
+                }}
+              >
+                <div className="rx-autocomplete-item-main">
+                  <span className="rx-autocomplete-item-name">
+                    {t.medicineName}
+                  </span>
+                  <div className="rx-autocomplete-actions">
+                    <span className="rx-autocomplete-item-badge">
+                      {t.isFavorite ? 'Favorite' : t.isFormulary ? 'Standard' : 'History'}
+                    </span>
+                    <button
+                      type="button"
+                      className={`rx-fav-star-btn ${t.isFavorite ? 'active' : ''}`}
+                      title={t.isFavorite ? 'Remove from favorites' : 'Mark as favorite'}
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        onToggleFavorite(t);
+                      }}
+                    >
+                      {t.isFavorite ? '★' : '☆'}
+                    </button>
+                  </div>
+                </div>
+                <div className="rx-autocomplete-item-details">
+                  {t.dose && <span><strong>Dose:</strong> {t.dose}</span>}
+                  {t.timesPerDay && <span><strong>Schedule:</strong> {formatFrequency(t.timesPerDay, t.timing)}</span>}
+                  {t.duration && <span><strong>Duration:</strong> {t.duration}</span>}
+                  {t.instructions && <span>· {t.instructions}</span>}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="rx-autocomplete-empty">
+              No preset found. You can type freely to prescribe custom medicine.
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PrescriptionForm({ value, onChange, doctorId }) {
+  const [favorites, setFavorites] = useState([]);
   const [templates, setTemplates] = useState([]);
-  const [search, setSearch] = useState('');
+
+  const loadFavorites = () => {
+    const params = new URLSearchParams();
+    params.set('favoritesOnly', 'true');
+    if (doctorId) params.set('doctorId', doctorId);
+    api.get(`/portal/prescriptions/templates?${params}`).then(setFavorites).catch(console.error);
+  };
 
   const loadTemplates = (q = '') => {
     const params = new URLSearchParams();
@@ -35,8 +138,27 @@ export default function PrescriptionForm({ value, onChange, doctorId }) {
   };
 
   useEffect(() => {
+    loadFavorites();
     loadTemplates();
   }, [doctorId]);
+
+  const toggleFavorite = async (item) => {
+    try {
+      await api.post('/portal/prescriptions/templates/toggle-favorite', {
+        medicineName: item.medicineName,
+        isFavorite: !item.isFavorite,
+        dose: item.dose,
+        timesPerDay: item.timesPerDay,
+        timing: item.timing,
+        duration: item.duration,
+        instructions: item.instructions,
+      });
+      loadFavorites();
+      loadTemplates();
+    } catch (err) {
+      console.error('Failed to toggle favorite', err);
+    }
+  };
 
   const updateItem = (idx, patch) => {
     const items = value.items.map((item, i) => (i === idx ? { ...item, ...patch } : item));
@@ -59,41 +181,52 @@ export default function PrescriptionForm({ value, onChange, doctorId }) {
 
   const addFromTemplate = (template) => {
     addItem(templateToPrescriptionItem(template));
-    setSearch('');
-    loadTemplates();
   };
-
-  const filteredTemplates = templates.filter((t) => {
-    if (!search.trim()) return true;
-    return t.medicineName.toLowerCase().includes(search.toLowerCase());
-  });
 
   return (
     <div className="rx-form">
+      {/* Top Favorite Medicines Quick Access Panel */}
       <div className="rx-saved-panel card card-muted">
-        <div className="rx-saved-header">
-          <FieldLabel title={FIELD_HELP.savedMedicines.title} hint={FIELD_HELP.savedMedicines.hint} />
-          <input
-            className="rx-search"
-            placeholder="Search saved..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              loadTemplates(e.target.value);
-            }}
-          />
+        <div className="rx-fav-panel-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--ink)' }}>Favorite Presets</span>
+            <span className="rx-fav-badge">{favorites.length} Starred</span>
+          </div>
+          <span className="text-body-sm" style={{ color: 'var(--ink-soft)' }}>
+            1-Click add to Rx · Star any medicine to pin here
+          </span>
         </div>
-        {filteredTemplates.length > 0 ? (
+        {favorites.length > 0 ? (
           <div className="rx-template-chips">
-            {filteredTemplates.map((t) => (
-              <button key={t.id} type="button" className="rx-template-chip" onClick={() => addFromTemplate(t)} title={templateLabel(t)}>
-                <strong>{t.medicineName}</strong>
+            {favorites.map((t) => (
+              <div
+                key={t.id || t.medicineName}
+                className="rx-template-chip favorite"
+                onClick={() => addFromTemplate(t)}
+                title={templateLabel(t)}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                  <strong style={{ color: '#0f172a' }}>{t.medicineName}</strong>
+                  <button
+                    type="button"
+                    className="rx-fav-star-btn active"
+                    title="Remove from favorites"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(t);
+                    }}
+                  >
+                    ★
+                  </button>
+                </div>
                 <span>{[t.dose, formatFrequency(t.timesPerDay, t.timing), t.duration].filter(Boolean).join(' · ')}</span>
-              </button>
+              </div>
             ))}
           </div>
         ) : (
-          <p className="text-body-sm rx-saved-empty">Medicines you prescribe will appear here for quick reuse.</p>
+          <p className="text-body-sm rx-saved-empty" style={{ padding: '4px 0' }}>
+            No favorites pinned yet. Click the star icon (★) in the search dropdown below on any medicine to pin it here.
+          </p>
         )}
       </div>
 
@@ -107,20 +240,19 @@ export default function PrescriptionForm({ value, onChange, doctorId }) {
               )}
             </div>
 
-            <label className="rx-field rx-field-full">
+            <div className="rx-field rx-field-full">
               <FieldLabel title={FIELD_HELP.medicine.title} hint={FIELD_HELP.medicine.hint} />
-              <input
-                list={`rx-meds-${idx}`}
-                placeholder="e.g. Paracetamol 650mg"
+              <MedicineAutocompleteInput
                 value={item.medicineName}
-                onChange={(e) => updateItem(idx, { medicineName: e.target.value })}
+                onChange={(name) => updateItem(idx, { medicineName: name })}
+                onSelectTemplate={(template) => {
+                  const populated = templateToPrescriptionItem(template);
+                  updateItem(idx, populated);
+                }}
+                onToggleFavorite={toggleFavorite}
+                templates={templates}
               />
-              <datalist id={`rx-meds-${idx}`}>
-                {[...new Set(templates.map((t) => t.medicineName))].map((name) => (
-                  <option key={name} value={name} />
-                ))}
-              </datalist>
-            </label>
+            </div>
 
             <div className="rx-field-row">
               <label className="rx-field">

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../shared/auth/AuthContext.jsx';
 import { CLINIC } from '../public-site/clinicData.js';
+import PoweredByArimini from '../shared/components/PoweredByArimini.jsx';
 
 const NAV = {
   receptionist: [
@@ -9,6 +10,7 @@ const NAV = {
     { to: '/portal/receptionist/appointments', label: 'Appointments' },
     { to: '/portal/receptionist/patients', label: 'Patients' },
     { to: '/portal/receptionist/walk-in', label: 'Walk-in' },
+    { to: '/portal/receptionist/payment-audit', label: 'Payment Audit' },
   ],
   doctor: [
     { to: '/portal/doctor', label: 'Dashboard', end: true },
@@ -22,9 +24,11 @@ const NAV = {
   ],
   admin: [
     { to: '/portal/admin', label: 'Dashboard', end: true },
+    { to: '/portal/admin/payment-audit', label: 'Payment Audit' },
     { to: '/portal/admin/doctors', label: 'Doctors' },
     { to: '/portal/admin/receptionists', label: 'Receptionists' },
     { to: '/portal/admin/appointments', label: 'Appointments' },
+    { to: '/portal/admin/cms', label: 'CMS & Services' },
     { to: '/portal/admin/settings', label: 'Settings' },
     { to: '/portal/admin/permissions', label: 'Permissions' },
   ],
@@ -101,6 +105,25 @@ export default function PortalLayout({ allowedRoles }) {
             </svg>
             Log out
           </button>
+          <div className="portal-sidebar-arimini" style={{ marginTop: 12, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <a
+              href="https://www.arimini.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, opacity: 0.75, textDecoration: 'none', color: '#CBD5E1', fontSize: '0.8rem', fontWeight: 500, transition: 'opacity 0.2s ease' }}
+              title="Powered by Arimini"
+              onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.75'; }}
+            >
+              <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>Powered by</span>
+              <img
+                src="/arimini.png"
+                alt="Arimini"
+                style={{ height: 15, maxWidth: 70, objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+                onError={(e) => { e.currentTarget.src = '/logo.svg'; }}
+              />
+            </a>
+          </div>
         </div>
       </aside>
 
@@ -130,6 +153,25 @@ export default function PortalLayout({ allowedRoles }) {
                   </svg>
                   Log out
                 </button>
+                <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <a
+                    href="https://www.arimini.in"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, opacity: 0.75, textDecoration: 'none', color: '#CBD5E1', fontSize: '0.8rem', fontWeight: 500, transition: 'opacity 0.2s ease' }}
+                    title="Powered by Arimini"
+                    onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.75'; }}
+                  >
+                    <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>Powered by</span>
+                    <img
+                      src="/arimini.png"
+                      alt="Arimini"
+                      style={{ height: 15, maxWidth: 70, objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+                      onError={(e) => { e.currentTarget.src = '/logo.svg'; }}
+                    />
+                  </a>
+                </div>
               </div>
             </nav>
           </>

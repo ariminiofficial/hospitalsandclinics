@@ -132,7 +132,7 @@ export default function HomePage() {
           <div className="why-grid reveal">
             {previewStories.map((t) => (
               <div key={t.id || t.patient_name} className="why-card testimonial-preview">
-                <div className="why-num">{'★'.repeat(t.rating || 5)}{t.department ? ` · ${t.department}` : ''}</div>
+                <div className="why-num">{t.rating || 5} / 5 Rating{t.department ? ` · ${t.department}` : ''}</div>
                 <p>&ldquo;{t.content}&rdquo;</p>
                 <p className="text-body-sm">— {t.patient_name}</p>
               </div>

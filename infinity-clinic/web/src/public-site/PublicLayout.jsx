@@ -90,7 +90,11 @@ function PublicLayoutInner() {
       <header ref={headerRef}>
         <div className="nav wrap">
           <Link to="/" className="brand" onClick={closeMenu}>
-            <div className="brand-mark">✚</div>
+            <div className="brand-mark">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+              </svg>
+            </div>
             <div>
               <div className="brand-name">{clinic.name}</div>
               <div className="brand-sub">{clinic.tagline}</div>
@@ -137,6 +141,23 @@ function PublicLayoutInner() {
           </div>
           <div className="foot-bottom">
             <span>© {new Date().getFullYear()} {clinic.name}</span>
+            <div className="arimini-footer-inner" style={{ margin: '4px 0' }}>
+              <span className="arimini-footer-label" style={{ color: 'inherit' }}>Powered by</span>
+              <a
+                href="https://www.arimini.in"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="arimini-brand-link"
+                title="Engineered by Arimini"
+              >
+                <img
+                  src="/arimini.png"
+                  alt="Arimini"
+                  className="arimini-logo-img"
+                  onError={(e) => { e.currentTarget.src = '/logo.svg'; }}
+                />
+              </a>
+            </div>
             <span>{footer.disclaimer}</span>
           </div>
         </div>

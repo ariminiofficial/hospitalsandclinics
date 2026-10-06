@@ -16,7 +16,18 @@ router.get('/today', requirePermission('opd.view_today', 'appointments.view'), a
   try {
     const { rows } = await query(
       `SELECT a.*, p.full_name AS patient_name, p.phone AS patient_phone,
-              d.full_name AS doctor_name
+              d.full_name AS doctor_name, d.consultation_fee,
+              COALESCE(
+                (SELECT json_agg(json_build_object(
+                  'id', s.id,
+                  'service_id', s.service_id,
+                  'service_name', s.service_name,
+                  'price', s.price,
+                  'quantity', s.quantity,
+                  'notes', s.notes
+                )) FROM appointment_services s WHERE s.appointment_id = a.id),
+                '[]'::json
+              ) AS services
        FROM appointments a
        JOIN patients p ON p.id = a.patient_id
        JOIN doctors d ON d.id = a.doctor_id

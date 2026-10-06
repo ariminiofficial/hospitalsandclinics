@@ -23,7 +23,7 @@ export default function PrescriptionViewModal({ prescription, onClose }) {
     : prescription.pharmacy_status === 'dispensing' ? 'in_consultation' : 'waiting';
 
   return (
-    <Modal open onClose={onClose} title="Prescription Details">
+    <Modal open onClose={onClose} title="Prescription Details" size="lg">
       <DetailDl
         items={[
           { label: 'Patient', value: prescription.patient_name },

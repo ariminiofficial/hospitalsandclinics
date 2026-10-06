@@ -23,8 +23,17 @@ export const OpdTokenStatus = {
 
 export const PaymentMethod = {
   CASH: 'cash',
-  CARD_OFFLINE: 'card_offline',
   UPI_OFFLINE: 'upi_offline',
+  CARD_OFFLINE: 'card_offline',
+  NET_BANKING: 'net_banking',
+  INSURANCE: 'insurance',
+  RAZORPAY: 'razorpay',
+};
+
+export const PaymentAuditStatus = {
+  PENDING_AUDIT: 'pending_audit',
+  VERIFIED: 'verified',
+  FLAGGED: 'flagged',
 };
 
 export const BookedVia = {
@@ -95,6 +104,8 @@ export const emptyPrescriptionItem = () => ({
 export const emptyPaymentForm = () => ({
   amount: '',
   method: PaymentMethod.CASH,
+  transactionRef: '',
+  notes: '',
 });
 
 export const emptyTestimonialForm = () => ({

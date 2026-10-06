@@ -1,0 +1,16 @@
+{
+  "name": "infinity-clinic",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Multi-Specialty Clinic & Hospital Management ERP & Public Portal",
+  "workspaces": [
+    "api",
+    "web"
+  ],
+  "scripts": {
+    "test": "npm --prefix api test && npm --prefix web test",
+    "test:api": "npm --prefix api test",
+    "test:web": "npm --prefix web test",
+    "build": "npm --prefix web run build"
+  }
+}

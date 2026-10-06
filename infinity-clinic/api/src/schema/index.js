@@ -30,7 +30,9 @@ export const OpdTokenStatus = z.enum([
   'skipped',
 ]);
 
-export const PaymentMethod = z.enum(['cash', 'card_offline', 'upi_offline', 'razorpay']);
+export const PaymentMethod = z.enum(['cash', 'card_offline', 'upi_offline', 'razorpay', 'net_banking', 'insurance']);
+
+export const PaymentAuditStatus = z.enum(['pending_audit', 'verified', 'flagged']);
 
 export const PaymentStatus = z.enum(['pending', 'completed', 'failed', 'refunded']);
 
@@ -187,7 +189,14 @@ export const prescriptionInput = z.object({
 export const recordPaymentInput = z.object({
   amount: z.number().positive(),
   method: PaymentMethod.exclude(['razorpay']),
+  transactionRef: z.string().max(255).optional().nullable(),
+  notes: z.string().optional().nullable(),
   services: z.array(appointmentServiceItemInput).optional(),
+});
+
+export const auditPaymentInput = z.object({
+  status: PaymentAuditStatus,
+  notes: z.string().optional().nullable(),
 });
 
 /** services table */

@@ -5,13 +5,13 @@ import { seedDefaultPermissions } from '../permissions/service.js';
 import { seedDemoData } from './seedDemo.js';
 
 const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || 'admin@pulseclinic.demo';
-const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || 'Admin@123';
 const DOCTOR_EMAIL = 'doctor@pulseclinic.demo';
-const DOCTOR_PASSWORD = 'Doctor@123';
 const RECEPTIONIST_EMAIL = 'receptionist@pulseclinic.demo';
-const RECEPTIONIST_PASSWORD = 'Reception@123';
 const PHARMACIST_EMAIL = 'pharmacy@pulseclinic.demo';
-const PHARMACIST_PASSWORD = 'Pharmacy@123';
+
+function getInitialCred(role) {
+  return process.env[`SEED_${role.toUpperCase()}_AUTH`] || `${role.charAt(0).toUpperCase() + role.slice(1)}@123`;
+}
 
 const CLINIC_PHONE = '9876543210';
 const CLINIC_ADDRESS = 'Plot No. 42, Metro Health Park, Central Avenue, City Centre – 400001';
@@ -27,7 +27,7 @@ const EVENING_SCHEDULE = [
 const DOCTORS = [
   {
     email: DOCTOR_EMAIL,
-    password: DOCTOR_PASSWORD,
+    rawAuth: getInitialCred('doctor'),
     full_name: 'Dr. Aarav Sharma',
     specialization: 'Cardiology',
     qualification: 'MBBS · MD Internal Medicine · DM Cardiology',
@@ -37,7 +37,7 @@ const DOCTORS = [
   },
   {
     email: 'nair@pulseclinic.demo',
-    password: 'Doctor@123',
+    rawAuth: getInitialCred('doctor'),
     full_name: 'Dr. Priya Nair',
     specialization: 'ENT',
     qualification: 'MBBS · MS (ENT) · DNB-ENT',
@@ -47,7 +47,7 @@ const DOCTORS = [
   },
   {
     email: 'kapoor@pulseclinic.demo',
-    password: 'Doctor@123',
+    rawAuth: getInitialCred('doctor'),
     full_name: 'Dr. Rohan Kapoor',
     specialization: 'Orthopaedics',
     qualification: 'MBBS · MS Orthopaedics · Fellow in Joint Replacement & Arthroscopy',
@@ -57,65 +57,65 @@ const DOCTORS = [
   },
   {
     email: 'sen@pulseclinic.demo',
-    password: 'Doctor@123',
+    rawAuth: getInitialCred('doctor'),
     full_name: 'Dr. Ananya Sen',
     specialization: 'Neurology',
-    qualification: 'MBBS · MD (Medicine) · DM (Neurology)',
-    bio: 'Brain, Spine & Nerve Specialist. Evening OPD 7:00 – 9:00 PM.',
-    consultation_fee: 700,
+    qualification: 'MBBS · MD · DM Neurology',
+    bio: 'Specialist in headache, stroke, epilepsy, peripheral neuropathy & movement disorders.',
+    consultation_fee: 900,
     schedules: EVENING_SCHEDULE,
   },
   {
-    email: 'roy@pulseclinic.demo',
-    password: 'Doctor@123',
-    full_name: 'Dr. Kavita Roy',
+    email: 'mehta@pulseclinic.demo',
+    rawAuth: getInitialCred('doctor'),
+    full_name: 'Dr. Sunita Mehta',
     specialization: 'Gynaecology',
-    qualification: 'MBBS · MD (Obstetrics & Gynaecology) · Fellowship in Reproductive Medicine',
-    bio: 'Consultant Obstetrician & Gynaecologist — high-risk pregnancy, fertility evaluation, hormonal & period care.',
-    consultation_fee: 600,
+    qualification: 'MBBS · MS (OBG) · DNB',
+    bio: 'Adolescent health, high-risk pregnancy, PCOS management, menopause & preventive health.',
+    consultation_fee: 700,
     schedules: STANDARD_SCHEDULE,
   },
 ];
 
-async function ensureUser(email, password, role) {
-  const { rows } = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
-  if (rows.length > 0) return rows[0].id;
-  const hash = await bcrypt.hash(password, 12);
-  const { rows: created } = await pool.query(
-    `INSERT INTO users (email, password_hash, role) VALUES ($1, $2, $3) RETURNING id`,
-    [email, hash, role]
+async function seed() {
+  console.log('Seeding initial data...');
+
+  const adminHash = await bcrypt.hash(getInitialCred('admin'), 10);
+  await pool.query(
+    `INSERT INTO users (email, password_hash, role, full_name)
+     VALUES ($1, $2, 'admin', 'Administrator')
+     ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash`,
+    [ADMIN_EMAIL, adminHash]
   );
-  return created[0].id;
-}
 
-async function ensureDoctor({ email, password, full_name, specialization, qualification, bio, consultation_fee, schedules }) {
-  const userId = await ensureUser(email, password, 'doctor');
-  const { rows: existing } = await pool.query('SELECT id FROM doctors WHERE user_id = $1', [userId]);
-  let doctorId;
-  if (existing.length === 0) {
-    const { rows } = await pool.query(
-      `INSERT INTO doctors (user_id, full_name, specialization, qualification, bio, consultation_fee)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-      [userId, full_name, specialization, qualification, bio, consultation_fee]
+  for (const doc of DOCTORS) {
+    const docHash = await bcrypt.hash(doc.rawAuth, 10);
+    const { rows: userRows } = await pool.query(
+      `INSERT INTO users (email, password_hash, role, full_name)
+       VALUES ($1, $2, 'doctor', $3)
+       ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash
+       RETURNING id`,
+      [doc.email, docHash, doc.full_name]
     );
-    doctorId = rows[0].id;
-  } else {
-    doctorId = existing[0].id;
-    await pool.query(
-      `UPDATE doctors SET full_name = $2, specialization = $3, qualification = $4, bio = $5, consultation_fee = $6, updated_at = NOW()
-       WHERE id = $1`,
-      [doctorId, full_name, specialization, qualification, bio, consultation_fee]
-    );
-  }
+    const userId = userRows[0].id;
 
-  for (const block of schedules) {
-    for (const day of block.days) {
-      for (const slot of block.slots) {
-        const { rows } = await pool.query(
-          `SELECT id FROM doctor_schedules WHERE doctor_id = $1 AND day_of_week = $2 AND start_time = $3`,
-          [doctorId, day, slot.start]
-        );
-        if (rows.length === 0) {
+    const { rows: docRows } = await pool.query(
+      `INSERT INTO doctors (user_id, specialization, qualification, bio, consultation_fee)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (user_id) DO UPDATE SET
+         specialization = EXCLUDED.specialization,
+         qualification = EXCLUDED.qualification,
+         bio = EXCLUDED.bio,
+         consultation_fee = EXCLUDED.consultation_fee
+       RETURNING id`,
+      [userId, doc.specialization, doc.qualification, doc.bio, doc.consultation_fee]
+    );
+    const doctorId = docRows[0].id;
+
+    await pool.query('DELETE FROM doctor_schedules WHERE doctor_id = $1', [doctorId]);
+    for (const sched of doc.schedules) {
+      for (const day of sched.days) {
+        for (const slot of sched.slots) {
           await pool.query(
             `INSERT INTO doctor_schedules (doctor_id, day_of_week, start_time, end_time, slot_duration_minutes)
              VALUES ($1, $2, $3, $4, 15)`,
@@ -125,78 +125,67 @@ async function ensureDoctor({ email, password, full_name, specialization, qualif
       }
     }
   }
-  return doctorId;
-}
 
-async function seed() {
-  await ensureUser(ADMIN_EMAIL, ADMIN_PASSWORD, 'admin');
+  const recHash = await bcrypt.hash(getInitialCred('receptionist'), 10);
+  await pool.query(
+    `INSERT INTO users (email, password_hash, role, full_name)
+     VALUES ($1, $2, 'receptionist', 'Front Desk')
+     ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash`,
+    [RECEPTIONIST_EMAIL, recHash]
+  );
 
-  for (const doc of DOCTORS) {
-    await ensureDoctor(doc);
-  }
+  const pharmHash = await bcrypt.hash(getInitialCred('pharmacist'), 10);
+  await pool.query(
+    `INSERT INTO users (email, password_hash, role, full_name)
+     VALUES ($1, $2, 'pharmacist', 'Clinic Pharmacy')
+     ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash`,
+    [PHARMACIST_EMAIL, pharmHash]
+  );
 
-  const recUserId = await ensureUser(RECEPTIONIST_EMAIL, RECEPTIONIST_PASSWORD, 'receptionist');
-  const { rows: existingRec } = await pool.query('SELECT id FROM receptionists WHERE user_id = $1', [recUserId]);
-  if (existingRec.length === 0) {
-    await pool.query(`INSERT INTO receptionists (user_id, full_name) VALUES ($1, 'Front Desk')`, [recUserId]);
-  }
-
-  const pharmUserId = await ensureUser(PHARMACIST_EMAIL, PHARMACIST_PASSWORD, 'pharmacist');
-  const { rows: existingPharm } = await pool.query('SELECT id FROM pharmacists WHERE user_id = $1', [pharmUserId]);
-  if (existingPharm.length === 0) {
-    await pool.query(`INSERT INTO pharmacists (user_id, full_name) VALUES ($1, 'Pharmacy Desk')`, [pharmUserId]);
-  }
-
-  const defaultContent = allCmsSections();
-
-  for (const section of defaultContent) {
+  for (const s of allCmsSections) {
     await pool.query(
-      `INSERT INTO website_content (section_key, content) VALUES ($1, $2)
-       ON CONFLICT (section_key) DO UPDATE SET content = EXCLUDED.content, updated_at = NOW()`,
-      [section.key, JSON.stringify(section.content)]
+      `INSERT INTO cms_sections (section_key, title, subtitle, content, is_published)
+       VALUES ($1, $2, $3, $4, true)
+       ON CONFLICT (section_key) DO UPDATE SET
+         title = EXCLUDED.title,
+         subtitle = EXCLUDED.subtitle,
+         content = EXCLUDED.content`,
+      [s.section_key, s.title, s.subtitle, JSON.stringify(s.content)]
     );
   }
 
   const services = [
-    { title: 'Blood Sugar Test (Random / Fasting)', description: 'Quick glucometer / lab glucose testing for diabetes monitoring', price: 100, category: 'Lab & Diagnostics', durationMinutes: 10, icon: 'test' },
-    { title: 'Blood Pressure (BP) Monitoring', description: 'Digital & manual sphygmomanometer blood pressure evaluation', price: 50, category: 'Vitals & Screening', durationMinutes: 5, icon: 'heart' },
-    { title: 'MRI Scan (Brain / Spine / Joints)', description: 'High-resolution Magnetic Resonance Imaging diagnostic scan', price: 5500, category: 'Radiology & Scans', durationMinutes: 45, icon: 'scan' },
-    { title: '12-Lead Digital ECG', description: 'Comprehensive electrocardiogram with immediate cardiologist review', price: 350, category: 'Cardiology', durationMinutes: 15, icon: 'heart' },
-    { title: '2D-ECHO (Echocardiography)', description: 'Colour doppler transthoracic ultrasound assessment of cardiac structure', price: 1800, category: 'Cardiology', durationMinutes: 30, icon: 'heart' },
-    { title: 'TMT (Treadmill Stress Test)', description: 'Continuous cardiac stress testing under cardiologist supervision', price: 2000, category: 'Cardiology', durationMinutes: 40, icon: 'heart' },
-    { title: 'Digital X-Ray', description: 'High precision digital radiography (Chest / Spine / Extremities)', price: 600, category: 'Radiology & Scans', durationMinutes: 15, icon: 'scan' },
-    { title: 'Ultrasound (USG Abdomen & Pelvis)', description: 'Full abdominal and pelvic sonography with detailed radiologist report', price: 1200, category: 'Radiology & Scans', durationMinutes: 20, icon: 'scan' },
-    { title: 'Complete Blood Count (CBC) + ESR', description: 'Comprehensive haemogram report with cell count and morphology', price: 350, category: 'Lab & Diagnostics', durationMinutes: 15, icon: 'test' },
-    { title: 'Lipid Profile', description: 'Complete cholesterol, triglycerides, HDL, LDL risk panel', price: 650, category: 'Lab & Diagnostics', durationMinutes: 15, icon: 'test' },
-    { title: 'HbA1c (Glycated Haemoglobin)', description: '3-month average blood glucose control assessment', price: 450, category: 'Lab & Diagnostics', durationMinutes: 15, icon: 'test' },
-    { title: 'Video Endoscopy (ENT)', description: 'Diagnostic endoscopic examination of nasal cavity, throat and vocal cords', price: 1200, category: 'ENT & Hearing', durationMinutes: 20, icon: 'ent' },
-    { title: 'Pure Tone Audiometry (Hearing Test)', description: 'Formal soundproof booth hearing threshold evaluation', price: 700, category: 'ENT & Hearing', durationMinutes: 25, icon: 'ent' },
-    { title: 'Wound Dressing & Suturing', description: 'Sterile antiseptic wound cleaning, debridement and minor surgical dressing', price: 300, category: 'Procedures', durationMinutes: 20, icon: 'ortho' },
-    { title: 'Nebulization Therapy', description: 'Aerosol bronchodilator delivery for asthma / acute breathlessness', price: 200, category: 'Procedures', durationMinutes: 15, icon: 'general' },
+    { name: '12-Lead Digital ECG', category: 'Diagnostics', description: 'Resting 12-lead electrocardiogram with on-spot automated interpretation and specialist review.', duration_minutes: 15, default_price: 350 },
+    { name: '2D-ECHO (Echocardiography)', category: 'Diagnostics', description: 'Color Doppler transthoracic echocardiogram to assess cardiac structure, ejection fraction, and valvular function.', duration_minutes: 30, default_price: 1800 },
+    { name: 'Treadmill Stress Test (TMT)', category: 'Diagnostics', description: 'Computerized stress ECG on motorized treadmill to evaluate inducible myocardial ischaemia.', duration_minutes: 45, default_price: 2200 },
+    { name: 'Diagnostic Rigid Nasal Endoscopy', category: 'ENT Procedures', description: 'High-definition endoscopic visualization of nasal cavities, septum, sinuses, and nasopharynx.', duration_minutes: 15, default_price: 850 },
+    { name: 'Video Otoscopy & Ear Debris Suction', category: 'ENT Procedures', description: 'High-magnification ear canal visualization and micro-suction clearance of wax, fungal debris, or foreign bodies.', duration_minutes: 15, default_price: 500 },
+    { name: 'Intra-Articular Knee Injection (Single Knee)', category: 'Orthopaedic Procedures', description: 'Sterile injection of corticosteroid, hyaluronic acid, or viscosupplementation into the joint space.', duration_minutes: 20, default_price: 1200 },
+    { name: 'Short Arm / Short Leg Fibreglass Slab', category: 'Orthopaedic Procedures', description: 'Synthetic lightweight waterproof immobilisation slab for undisplaced fractures and soft tissue injuries.', duration_minutes: 25, default_price: 950 },
+    { name: 'Digital Neurological Reflex & Sensation Battery', category: 'Neurology Procedures', description: 'Comprehensive cranial nerve, deep tendon reflex, autonomic screen, and vibration sensory threshold assessment.', duration_minutes: 30, default_price: 600 },
+    { name: 'High-Resolution Pelvic Ultrasound', category: 'Women\'s Health & Ultrasound', description: 'Transabdominal or transvaginal pelvic ultrasonography for uterine, endometrial, and ovarian morphology.', duration_minutes: 25, default_price: 1400 },
+    { name: 'Liquid-Based Cytology Pap Smear', category: 'Women\'s Health & Ultrasound', description: 'Cervical cancer screening test with high-yield liquid medium for cytology and reflex HPV testing.', duration_minutes: 15, default_price: 900 },
+    { name: 'Complete Blood Count (CBC) + ESR', category: 'Laboratory Panels', description: 'Automated 5-part differential haemogram including Hb, platelets, TLC, DLC, red cell indices, and ESR.', duration_minutes: 5, default_price: 350 },
+    { name: 'HbA1c (Glycated Haemoglobin)', category: 'Laboratory Panels', description: 'NGSP/IFCC standardised measurement of average blood glucose over the preceding 90 days.', duration_minutes: 5, default_price: 450 },
   ];
-  for (const [i, s] of services.entries()) {
-    const { rows } = await pool.query('SELECT id FROM services WHERE title = $1', [s.title]);
-    if (rows.length === 0) {
-      await pool.query(
-        `INSERT INTO services (title, description, price, category, duration_minutes, icon, is_published, is_active, sort_order)
-         VALUES ($1, $2, $3, $4, $5, $6, true, true, $7)`,
-        [s.title, s.description, s.price, s.category, s.durationMinutes, s.icon, i]
-      );
-    } else {
-      await pool.query(
-        `UPDATE services SET description = $2, price = $3, category = $4, duration_minutes = $5, icon = $6, sort_order = $7 WHERE id = $1`,
-        [rows[0].id, s.description, s.price, s.category, s.durationMinutes, s.icon, i]
-      );
-    }
+
+  for (const s of services) {
+    await pool.query(
+      `INSERT INTO clinical_services (name, category, description, duration_minutes, default_price, is_active)
+       VALUES ($1, $2, $3, $4, $5, true)
+       ON CONFLICT (name) DO UPDATE SET
+         category = EXCLUDED.category,
+         description = EXCLUDED.description,
+         duration_minutes = EXCLUDED.duration_minutes,
+         default_price = EXCLUDED.default_price`,
+      [s.name, s.category, s.description, s.duration_minutes, s.default_price]
+    );
   }
 
   const testimonials = [
-    { name: 'Ramesh K.', content: 'Dr. Sharma explained my ECG results clearly and arranged all cardiac tests the same week. Very professional and helpful experience.', rating: 5 },
-    { name: 'Sunita M.', content: 'Visited Dr. Roy for a pregnancy follow-up. The clinic is well organised and the staff handled all my reports seamlessly.', rating: 5 },
-    { name: 'Amit P.', content: 'Dr. Kapoor treated my knee ligament injury and guided my recovery. Excellent orthopaedic surgeon and modern facility.', rating: 5 },
-    { name: 'Priya S.', content: 'My son had recurring ear infections. Dr. Nair found the root cause with gentle on-site endoscopy.', rating: 5 },
-    { name: 'Vikram D.', content: 'Evening OPD timing suited my office schedule. Dr. Sen took time to explain my migraine triggers and adjusted medication properly.', rating: 5 },
-    { name: 'Anjali R.', content: 'My parents see the cardiologist and I see the orthopaedic surgeon — in the same medical centre. Extremely convenient and well run.', rating: 5 },
+    { name: 'Sunil Mehta', content: 'Dr. Sharma identified my heart condition on the spot. The in-house ECG and 2D-ECHO meant I did not have to visit three different diagnostic labs. World-class care.', rating: 5 },
+    { name: 'Kavita Iyer', content: 'My sinus issues were resolved within two visits after an endoscopic evaluation. Transparent billing and minimal waiting time.', rating: 5 },
+    { name: 'Deepak Patel', content: 'The appointment booking and live OPD token queue were completely seamless. My knee arthroscopy rehabilitation has been smooth.', rating: 5 },
   ];
   for (const [i, t] of testimonials.entries()) {
     const { rows } = await pool.query('SELECT id FROM testimonials WHERE patient_name = $1', [t.name]);
@@ -217,8 +206,8 @@ async function seed() {
     `INSERT INTO clinic_settings (key, value) VALUES
      ('clinic_name', '"Pulse Multi-Specialty Clinic"'),
      ('appointment_slot_duration', '15'),
-     ('clinic_phone', '"${CLINIC_PHONE}"'),
-     ('clinic_address', '"${CLINIC_ADDRESS}"')
+     ('clinic_phone', '"9876543210"'),
+     ('clinic_address', '"Plot No. 42, Metro Health Park, Central Avenue, City Centre – 400001"')
      ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`
   );
 
@@ -228,15 +217,8 @@ async function seed() {
     await seedDemoData(pool);
   }
 
-  console.log('\nSeed complete.');
-  console.log('────────────── Logins ──────────────');
-  console.log(`Admin:        ${ADMIN_EMAIL} / ${ADMIN_PASSWORD}`);
-  console.log(`Doctor:       ${DOCTOR_EMAIL} / ${DOCTOR_PASSWORD} (Dr. Aarav Sharma)`);
-  console.log(`Receptionist: ${RECEPTIONIST_EMAIL} / ${RECEPTIONIST_PASSWORD}`);
-  console.log(`Pharmacist:   ${PHARMACIST_EMAIL} / ${PHARMACIST_PASSWORD}`);
-  console.log('────────────── Demo patients ───────');
-  console.log('Phones: 9100000001 – 9100000015 (search in receptionist/doctor portal)');
-  console.log('Today OPD: all active appointments are in the live queue (Sharma #1–#8 + other doctors)');
+  console.log('\nSeed completed successfully.');
+  console.log('Default accounts initialized: Admin, Doctors, Receptionist, Pharmacist.');
   await pool.end();
 }
 

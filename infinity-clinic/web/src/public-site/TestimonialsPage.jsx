@@ -25,7 +25,9 @@ export default function TestimonialsPage() {
           <div className="testimonial-grid reveal">
             {testimonials.map((t, i) => (
               <div key={t.id || i} className="testimonial-card">
-                <div className="testimonial-stars">{'★'.repeat(t.rating || 5)}</div>
+                <div className="badge badge-accent" style={{ marginBottom: '0.75rem', width: 'fit-content' }}>
+                  Rating: {t.rating || 5} / 5
+                </div>
                 {t.department && <span className="testimonial-dept">{t.department}</span>}
                 <p className="testimonial-quote">&ldquo;{t.content}&rdquo;</p>
                 <p className="testimonial-author">— {t.patient_name}</p>

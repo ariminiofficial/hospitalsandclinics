@@ -35,6 +35,7 @@ export const PERMISSION_CATALOG = [
     permissions: [
       { key: 'payments.record', label: 'Record payment', description: 'Record cash/card/UPI offline payment' },
       { key: 'payments.receipt', label: 'Print receipt', description: 'Generate payment receipt' },
+      { key: 'payments.audit', label: 'Audit & reconciliation', description: 'Audit payment ledger, reconcile cash/UPI/cards, and flag discrepancies' },
     ],
   },
   {
@@ -109,7 +110,7 @@ export const DEFAULT_ROLE_PERMISSIONS = {
     'appointments.reschedule', 'appointments.cancel', 'appointments.no_show', 'appointments.walk_in',
     'patients.search', 'patients.view', 'patients.create', 'patients.edit', 'patients.history',
     'opd.view_queue', 'opd.view_today',
-    'payments.record', 'payments.receipt',
+    'payments.record', 'payments.receipt', 'payments.audit',
   ],
   doctor: [
     'portal.doctor',

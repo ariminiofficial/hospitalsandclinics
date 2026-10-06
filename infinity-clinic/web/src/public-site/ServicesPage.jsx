@@ -25,13 +25,8 @@ export default function ServicesPage() {
             <div className="service-detail-grid reveal">
               {services.map((s) => (
                 <div key={s.id} className="service-detail-card">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <div style={{ marginBottom: 12 }}>
                     <span className={`preview-tag dep-${s.icon || 'heart'}`} />
-                    {Number(s.price) > 0 && (
-                      <span className="price-pill" style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--primary, #0284c7)', background: 'var(--primary-subtle, #f0f9ff)', padding: '3px 10px', borderRadius: '999px', border: '1px solid var(--border-subtle, #bae6fd)' }}>
-                        ₹{Number(s.price).toLocaleString('en-IN')}
-                      </span>
-                    )}
                   </div>
                   {s.category && <span className="service-card-cat" style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted, #64748b)', fontWeight: 600, display: 'block', marginBottom: 4 }}>{s.category}</span>}
                   <h3>{s.title}</h3>

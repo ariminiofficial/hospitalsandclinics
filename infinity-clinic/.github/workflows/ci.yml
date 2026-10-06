@@ -1,0 +1,70 @@
+name: CI Quality & Test Suite
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  lint:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Lint API
+        working-directory: ./api
+        run: |
+          npm ci
+          npm run lint
+      - name: Lint Web
+        working-directory: ./web
+        run: |
+          npm ci
+          npm run lint
+
+  test-api:
+    name: Backend Test Suite (Node.js)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'api/package-lock.json'
+      - name: Install API Dependencies
+        working-directory: ./api
+        run: npm ci
+      - name: Run Backend Tests
+        working-directory: ./api
+        run: npm test
+
+  test-web:
+    name: Frontend Test Suite (React / Vite)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'web/package-lock.json'
+      - name: Install Web Dependencies
+        working-directory: ./web
+        run: npm ci
+      - name: Run Frontend Tests
+        working-directory: ./web
+        run: npm test
+      - name: Build Web Production Bundle
+        working-directory: ./web
+        run: npm run build

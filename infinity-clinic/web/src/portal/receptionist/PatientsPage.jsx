@@ -135,15 +135,69 @@ export default function PatientsPage() {
 
       <VisitDetailModal visit={viewVisit} onClose={() => setViewVisit(null)} patientLinkPrefix={null} />
 
-      <Modal open={showForm} onClose={() => { setShowForm(false); setEditing(false); }} title={editing ? 'Edit Patient' : 'Add Patient'}>
+      <Modal open={showForm} onClose={() => { setShowForm(false); setEditing(false); }} title={editing ? 'Edit Patient Profile' : 'Register New Patient'} size="lg">
         <form onSubmit={handleSubmit} className="form">
-          <label>Phone<input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required maxLength={15} /></label>
-          <label>Full Name<input value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} required /></label>
-          <label>Email<input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></label>
-          <label>Date of Birth<input type="date" value={form.dateOfBirth} onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })} /></label>
-          <label>Gender<input value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })} maxLength={20} /></label>
-          <label>Address<textarea value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} rows={2} /></label>
-          <button type="submit" className="btn btn-primary">{editing ? 'Save Changes' : 'Create Patient'}</button>
+          <div className="grid-2-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            <label>Phone Number (10 digits) *
+              <input
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                placeholder="e.g. 9876543210"
+                required
+                maxLength={15}
+              />
+            </label>
+            <label>Patient Full Name *
+              <input
+                value={form.fullName}
+                onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                placeholder="e.g. Rahul Sharma"
+                required
+              />
+            </label>
+          </div>
+          <div className="grid-2-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            <label>Email Address
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="patient@example.com"
+              />
+            </label>
+            <label>Gender
+              <select value={form.gender || ''} onChange={(e) => setForm({ ...form, gender: e.target.value })}>
+                <option value="">Select gender...</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </label>
+          </div>
+          <div className="grid-2-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            <label>Date of Birth
+              <input
+                type="date"
+                value={form.dateOfBirth || ''}
+                onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
+              />
+            </label>
+            <label>Residential City / Area
+              <input
+                value={form.address || ''}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                placeholder="e.g. Flat 402, Green Park, City Centre"
+              />
+            </label>
+          </div>
+          <div className="modal-footer-actions">
+            <button type="button" className="btn btn-secondary" onClick={() => { setShowForm(false); setEditing(false); }}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary">
+              {editing ? 'Save Changes' : '+ Register Patient'}
+            </button>
+          </div>
         </form>
       </Modal>
     </div>

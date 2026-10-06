@@ -1,6 +1,7 @@
 /**
  * Full demo transactional data — patients, appointments (all statuses),
- * OPD tokens, consultations, prescriptions, pharmacy queue, payments, templates.
+ * OPD tokens, consultations, prescriptions, pharmacy queue, payments,
+ * clinical diagnostic services, templates, and audit logs.
  */
 
 const DEMO_TAG = '__demo__';
@@ -48,6 +49,34 @@ const RX_ITEMS_GYNAE = [
   { medicine_name: 'Iron Supplement', dose: '1 tablet', times_per_day: 1, timing_night: true, duration: '2 months', instructions: 'After dinner' },
 ];
 
+const CLINICAL_SERVICES_BANK = {
+  cardiology: [
+    [{ service_name: '12-Lead Digital ECG', price: 350 }, { service_name: 'Blood Sugar Test (Random / Fasting)', price: 100 }],
+    [{ service_name: '2D-ECHO (Echocardiography)', price: 1800 }, { service_name: 'Lipid Profile', price: 650 }],
+    [{ service_name: '12-Lead Digital ECG', price: 350 }, { service_name: 'Complete Blood Count (CBC) + ESR', price: 350 }],
+    [{ service_name: 'Blood Pressure (BP) Monitoring', price: 50 }, { service_name: 'HbA1c (Glycated Haemoglobin)', price: 450 }],
+    [{ service_name: '12-Lead Digital ECG', price: 350 }],
+  ],
+  ent: [
+    [{ service_name: 'Pure Tone Audiometry (Hearing Test)', price: 700 }],
+    [{ service_name: 'Video Endoscopy (ENT)', price: 1200 }, { service_name: 'Complete Blood Count (CBC) + ESR', price: 350 }],
+    [{ service_name: 'Nebulization Therapy', price: 200 }],
+  ],
+  ortho: [
+    [{ service_name: 'Digital X-Ray', price: 600 }, { service_name: 'Wound Dressing & Suturing', price: 300 }],
+    [{ service_name: 'Digital X-Ray', price: 600 }],
+    [{ service_name: 'Complete Blood Count (CBC) + ESR', price: 350 }],
+  ],
+  neuro: [
+    [{ service_name: 'MRI Scan (Brain / Spine / Joints)', price: 5500 }, { service_name: 'Complete Blood Count (CBC) + ESR', price: 350 }],
+    [{ service_name: 'Blood Pressure (BP) Monitoring', price: 50 }, { service_name: 'HbA1c (Glycated Haemoglobin)', price: 450 }],
+  ],
+  gynae: [
+    [{ service_name: 'Ultrasound (USG Abdomen & Pelvis)', price: 1200 }, { service_name: 'Complete Blood Count (CBC) + ESR', price: 350 }],
+    [{ service_name: 'Blood Sugar Test (Random / Fasting)', price: 100 }, { service_name: 'Lipid Profile', price: 650 }],
+  ],
+};
+
 function formatFrequency(item) {
   const parts = [];
   if (item.timing_morning) parts.push('Morning');
@@ -87,6 +116,14 @@ async function clearDemoData(pool) {
         SELECT id FROM appointments WHERE doctor_id = ANY($1::uuid[]) AND appointment_date = $2
       )`, [doctorIds, today]);
     await pool.query(`
+      DELETE FROM appointment_services WHERE appointment_id IN (
+        SELECT id FROM appointments WHERE doctor_id = ANY($1::uuid[]) AND appointment_date = $2
+      )`, [doctorIds, today]);
+    await pool.query(`
+      DELETE FROM payment_audit_logs WHERE appointment_id IN (
+        SELECT id FROM appointments WHERE doctor_id = ANY($1::uuid[]) AND appointment_date = $2
+      )`, [doctorIds, today]);
+    await pool.query(`
       DELETE FROM payments WHERE appointment_id IN (
         SELECT id FROM appointments WHERE doctor_id = ANY($1::uuid[]) AND appointment_date = $2
       )`, [doctorIds, today]);
@@ -100,41 +137,50 @@ async function clearDemoData(pool) {
     );
   }
 
-  const { rows: demoPatients } = await pool.query(`SELECT id FROM patients WHERE phone LIKE '910000%'`);
+  const { rows: demoPatients } = await pool.query('SELECT id FROM patients WHERE phone LIKE $1', ['910000%']);
   const demoPatientIds = demoPatients.map((r) => r.id);
-
-  const apptFilter = demoPatientIds.length
-    ? `(a.notes = $1 OR a.patient_id = ANY($2::uuid[]))`
-    : `a.notes = $1`;
-  const apptParams = demoPatientIds.length ? [DEMO_TAG, demoPatientIds] : [DEMO_TAG];
+  const apptParams = [DEMO_TAG, demoPatientIds.length ? demoPatientIds : null];
 
   await pool.query(`
     DELETE FROM prescription_items WHERE prescription_id IN (
       SELECT pr.id FROM prescriptions pr
       JOIN consultations c ON c.id = pr.consultation_id
       JOIN appointments a ON a.id = c.appointment_id
-      WHERE ${apptFilter}
+      WHERE (a.notes = $1 OR ($2::uuid[] IS NOT NULL AND a.patient_id = ANY($2::uuid[])))
     )`, apptParams);
   await pool.query(`
     DELETE FROM prescriptions WHERE consultation_id IN (
       SELECT c.id FROM consultations c
       JOIN appointments a ON a.id = c.appointment_id
-      WHERE ${apptFilter}
+      WHERE (a.notes = $1 OR ($2::uuid[] IS NOT NULL AND a.patient_id = ANY($2::uuid[])))
     )`, apptParams);
   await pool.query(`
     DELETE FROM consultations WHERE appointment_id IN (
-      SELECT a.id FROM appointments a WHERE ${apptFilter}
+      SELECT a.id FROM appointments a
+      WHERE (a.notes = $1 OR ($2::uuid[] IS NOT NULL AND a.patient_id = ANY($2::uuid[])))
     )`, apptParams);
   await pool.query(`
     DELETE FROM opd_tokens WHERE appointment_id IN (
-      SELECT a.id FROM appointments a WHERE ${apptFilter}
+      SELECT a.id FROM appointments a
+      WHERE (a.notes = $1 OR ($2::uuid[] IS NOT NULL AND a.patient_id = ANY($2::uuid[])))
+    )`, apptParams);
+  await pool.query(`
+    DELETE FROM appointment_services WHERE appointment_id IN (
+      SELECT a.id FROM appointments a
+      WHERE (a.notes = $1 OR ($2::uuid[] IS NOT NULL AND a.patient_id = ANY($2::uuid[])))
+    )`, apptParams);
+  await pool.query(`
+    DELETE FROM payment_audit_logs WHERE appointment_id IN (
+      SELECT a.id FROM appointments a
+      WHERE (a.notes = $1 OR ($2::uuid[] IS NOT NULL AND a.patient_id = ANY($2::uuid[])))
     )`, apptParams);
   await pool.query(`
     DELETE FROM payments WHERE appointment_id IN (
-      SELECT a.id FROM appointments a WHERE ${apptFilter}
+      SELECT a.id FROM appointments a
+      WHERE (a.notes = $1 OR ($2::uuid[] IS NOT NULL AND a.patient_id = ANY($2::uuid[])))
     )`, apptParams);
-  await pool.query(`DELETE FROM appointments a WHERE ${apptFilter}`, apptParams);
-  await pool.query(`DELETE FROM patients WHERE phone LIKE '910000%'`);
+  await pool.query('DELETE FROM appointments a WHERE (a.notes = $1 OR ($2::uuid[] IS NOT NULL AND a.patient_id = ANY($2::uuid[])))', apptParams);
+  await pool.query('DELETE FROM patients WHERE phone LIKE $1', ['910000%']);
   await pool.query(`DELETE FROM medicine_templates WHERE medicine_name LIKE '%(demo)%' OR medicine_name IN (
     'Amlodipine 5mg', 'Atorvastatin 10mg', 'Aspirin 75mg', 'Montelukast 10mg',
     'Levocetirizine 5mg', 'Diclofenac 50mg', 'Calcium + Vit D3', 'Propranolol 40mg',
@@ -149,22 +195,13 @@ async function getDoctorMap(pool) {
      FROM doctors d JOIN users u ON u.id = d.user_id
      WHERE u.email IN ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
     [
-      'doctor@pulseclinic.demo',
-      'nair@pulseclinic.demo',
-      'kapoor@pulseclinic.demo',
-      'sen@pulseclinic.demo',
-      'roy@pulseclinic.demo',
-      // backward compatibility lookup
-      'doctor@infinityclinic.com',
-      'moon@infinityclinics.com',
-      'kolhe@infinityclinics.com',
-      'khandait@infinityclinics.com',
-      'lodhi@infinityclinics.com',
+      'doctor@pulseclinic.demo', 'nair@pulseclinic.demo', 'kapoor@pulseclinic.demo',
+      'sen@pulseclinic.demo', 'roy@pulseclinic.demo',
+      'doctor@infinityclinic.com', 'moon@infinityclinics.com', 'kolhe@infinityclinics.com',
+      'khandait@infinityclinics.com', 'lodhi@infinityclinics.com',
     ]
   );
-  const map = {};
-  for (const r of rows) map[r.email] = r;
-  return map;
+  return Object.fromEntries(rows.map((r) => [r.email, r]));
 }
 
 async function ensurePatient(pool, p) {
@@ -180,53 +217,51 @@ async function ensurePatient(pool, p) {
   return rows[0].id;
 }
 
-async function insertAppointment(pool, { patientId, doctorId, date, time, status, bookedVia, notes }) {
+async function insertAppointment(pool, { patientId, doctorId, date, time, status, bookedVia }) {
   const { rows } = await pool.query(
-    `INSERT INTO appointments (patient_id, doctor_id, appointment_date, appointment_time, status, booked_via, notes)
-     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-    [patientId, doctorId, date, time, status, bookedVia, notes || DEMO_TAG]
+    `INSERT INTO appointments (patient_id, doctor_id, appointment_date, appointment_time, status, notes, booked_via)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     RETURNING id`,
+    [patientId, doctorId, date, time, status, DEMO_TAG, bookedVia || 'walk_in']
   );
   return rows[0].id;
 }
 
 async function insertToken(pool, { appointmentId, doctorId, visitDate, tokenNumber, status, calledAt, completedAt }) {
-  const { rows } = await pool.query(
+  await pool.query(
     `INSERT INTO opd_tokens (appointment_id, doctor_id, visit_date, token_number, status, called_at, completed_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
     [appointmentId, doctorId, visitDate, tokenNumber, status, calledAt || null, completedAt || null]
   );
-  return rows[0].id;
 }
 
 async function insertConsultation(pool, { appointmentId, doctorId, patientId, complaint, diagnosis, notes }) {
   const { rows } = await pool.query(
     `INSERT INTO consultations (appointment_id, doctor_id, patient_id, chief_complaint, diagnosis, notes)
-     VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+     VALUES ($1, $2, $3, $4, $5, $6)
+     RETURNING id`,
     [appointmentId, doctorId, patientId, complaint, diagnosis, notes]
   );
   return rows[0].id;
 }
 
-async function insertPrescription(pool, {
-  consultationId, doctorId, patientId, advice, pharmacyStatus, items, pharmacistId,
-}) {
+async function insertPrescription(pool, { consultationId, doctorId, patientId, advice, pharmacyStatus, items, pharmacistId }) {
+  const isDispensed = pharmacyStatus === 'dispensed';
   const { rows } = await pool.query(
     `INSERT INTO prescriptions (consultation_id, doctor_id, patient_id, advice, pharmacy_status, dispensed_at, dispensed_by)
-     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-    [
-      consultationId, doctorId, patientId, advice, pharmacyStatus,
-      pharmacyStatus === 'dispensed' ? new Date() : null,
-      pharmacyStatus === 'dispensed' ? pharmacistId : null,
-    ]
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     RETURNING id`,
+    [consultationId, doctorId, patientId, advice, pharmacyStatus || 'pending', isDispensed ? new Date() : null, isDispensed ? pharmacistId : null]
   );
   const rxId = rows[0].id;
+
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
     await pool.query(
       `INSERT INTO prescription_items (
          prescription_id, medicine_name, dosage, frequency, duration, instructions,
          dose, times_per_day, timing_morning, timing_afternoon, timing_evening, timing_night, sort_order
-       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
       [
         rxId, item.medicine_name, item.dose, formatFrequency(item), item.duration, item.instructions || null,
         item.dose, item.times_per_day || null,
@@ -237,12 +272,52 @@ async function insertPrescription(pool, {
   return rxId;
 }
 
-async function insertPayment(pool, { appointmentId, amount, method, status, recordedBy }) {
-  await pool.query(
-    `INSERT INTO payments (appointment_id, amount, method, status, recorded_by, paid_at)
-     VALUES ($1, $2, $3, $4, $5, $6)`,
-    [appointmentId, amount, method, status, recordedBy, status === 'completed' ? new Date() : null]
+async function insertPayment(pool, { appointmentId, amount, method, status, recordedBy, transactionRef, notes, paidAt, services = [] }) {
+  let totalAmount = Number(amount) || 0;
+
+  // Insert services
+  if (Array.isArray(services) && services.length > 0) {
+    for (const s of services) {
+      const linePrice = Number(s.price) || 0;
+      const qty = Number(s.quantity) || 1;
+      totalAmount += linePrice * qty;
+      await pool.query(
+        `INSERT INTO appointment_services (appointment_id, service_id, service_name, price, quantity, notes)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [appointmentId, s.service_id || null, s.service_name, linePrice, qty, s.notes || null]
+      );
+    }
+  }
+
+  const actualPaidAt = status === 'completed' ? (paidAt || new Date()) : null;
+  const { rows } = await pool.query(
+    `INSERT INTO payments (appointment_id, amount, method, transaction_ref, notes, status, audit_status, recorded_by, paid_at)
+     VALUES ($1, $2, $3, $4, $5, $6, 'verified', $7, $8)
+     RETURNING id`,
+    [appointmentId, totalAmount, method, transactionRef || null, notes || null, status, recordedBy, actualPaidAt]
   );
+
+  const paymentId = rows[0]?.id;
+
+  if (paymentId && status === 'completed') {
+    await pool.query(
+      `INSERT INTO payment_audit_logs (payment_id, appointment_id, action, performed_by, new_values, notes, created_at)
+       VALUES ($1, $2, 'RECORDED', $3, $4, $5, $6)`,
+      [
+        paymentId,
+        appointmentId,
+        recordedBy,
+        JSON.stringify({
+          amount: totalAmount,
+          method,
+          transaction_ref: transactionRef || null,
+          services,
+        }),
+        notes || 'Payment recorded at reception desk',
+        actualPaidAt || new Date(),
+      ]
+    );
+  }
 }
 
 async function seedMedicineTemplates(pool, doctorId, items) {
@@ -296,7 +371,7 @@ async function setTokenCounter(pool, doctorId, visitDate, lastToken) {
 }
 
 export async function seedDemoData(pool) {
-  console.log('Seeding demo transactional data...');
+  console.log('Seeding demo transactional data with attached services...');
   await clearDemoData(pool);
 
   const doctors = await getDoctorMap(pool);
@@ -315,6 +390,12 @@ export async function seedDemoData(pool) {
     `SELECT id FROM users WHERE email IN ('admin@pulseclinic.demo', 'admin@infinityclinic.com') LIMIT 1`
   );
   const adminId = adminRows[0]?.id;
+
+  const { rows: recRows } = await pool.query(
+    `SELECT u.id FROM users u WHERE u.role = 'receptionist' LIMIT 1`
+  );
+  const receptionistId = recRows[0]?.id || adminId;
+
   const { rows: pharmRows } = await pool.query(
     `SELECT p.id FROM pharmacists p JOIN users u ON u.id = p.user_id WHERE u.email IN ('pharmacy@pulseclinic.demo', 'pharmacy@infinityclinic.com') LIMIT 1`
   );
@@ -328,7 +409,7 @@ export async function seedDemoData(pool) {
   const { rows: [{ today }] } = await pool.query(`SELECT CURRENT_DATE::text AS today`);
   const p = (phone) => patientIds[phone];
 
-  // ── Medicine templates (doctor saved medicines) ──
+  // ── Medicine templates ──
   await seedMedicineTemplates(pool, sharma.id, RX_ITEMS_CARDIO);
   await seedMedicineTemplates(pool, sharma.id, [{ medicine_name: 'Paracetamol 650mg', dose: '1 tablet', times_per_day: 3, timing_morning: true, timing_afternoon: true, timing_evening: true, duration: '5 days', instructions: 'After food' }]);
   if (nair) await seedMedicineTemplates(pool, nair.id, RX_ITEMS_ENT);
@@ -336,14 +417,28 @@ export async function seedDemoData(pool) {
   if (sen) await seedMedicineTemplates(pool, sen.id, RX_ITEMS_NEURO);
   if (roy) await seedMedicineTemplates(pool, roy.id, RX_ITEMS_GYNAE);
 
-  // ── TODAY — Dr Sharma queue (full OPD workflow) ──
+  // ── TODAY — Dr Sharma queue (full OPD workflow + services) ──
   const scenarios = [
     { phone: '9100000001', time: '09:00', apptStatus: 'completed', tokenStatus: 'completed', token: 1,
       complaint: 'Chest tightness on exertion', diagnosis: 'Stable angina — on medical management',
-      rx: RX_ITEMS_CARDIO, pharmacyStatus: 'dispensed', payment: { method: 'cash', status: 'completed' } },
+      rx: RX_ITEMS_CARDIO, pharmacyStatus: 'dispensed',
+      payment: {
+        method: 'cash', status: 'completed', recordedBy: receptionistId,
+        transactionRef: 'Paid cash at counter (500x2 + 200x1)',
+        notes: 'ECG conducted in Room 1',
+        services: [{ service_name: '12-Lead Digital ECG', price: 350 }, { service_name: 'Blood Sugar Test (Random / Fasting)', price: 100 }],
+      }
+    },
     { phone: '9100000002', time: '09:15', apptStatus: 'completed', tokenStatus: 'completed', token: 2,
       complaint: 'Palpitations, anxiety', diagnosis: 'Benign PVCs — reassured',
-      rx: RX_ITEMS_CARDIO.slice(0, 2), pharmacyStatus: 'pending', payment: { method: 'upi_offline', status: 'completed' } },
+      rx: RX_ITEMS_CARDIO.slice(0, 2), pharmacyStatus: 'pending',
+      payment: {
+        method: 'upi_offline', status: 'completed', recordedBy: receptionistId,
+        transactionRef: '423981029384',
+        notes: '2D-Echo conducted by Dr Sharma',
+        services: [{ service_name: '2D-ECHO (Echocardiography)', price: 1800 }, { service_name: 'Lipid Profile', price: 650 }],
+      }
+    },
     { phone: '9100000003', time: '09:30', apptStatus: 'in_consultation', tokenStatus: 'in_consultation', token: 3,
       complaint: 'Hypertension follow-up', diagnosis: 'Essential hypertension',
       rx: RX_ITEMS_CARDIO.slice(0, 1), pharmacyStatus: 'draft', payment: null },
@@ -397,20 +492,26 @@ export async function seedDemoData(pool) {
     if (s.payment) {
       await insertPayment(pool, {
         appointmentId: apptId, amount: sharma.consultation_fee,
-        method: s.payment.method, status: s.payment.status, recordedBy: adminId,
+        method: s.payment.method, status: s.payment.status, recordedBy: s.payment.recordedBy || adminId,
+        transactionRef: s.payment.transactionRef, notes: s.payment.notes, services: s.payment.services || [],
       });
     }
   }
 
   await setTokenCounter(pool, sharma.id, today, maxToken);
 
-  // ── TODAY — other doctors (appointments + live queue tokens) ──
+  // ── TODAY — other doctors (appointments + live queue tokens + services) ──
   const otherToday = [
     nair && {
       doctor: nair, phone: '9100000011', time: '10:00', apptStatus: 'completed', token: 1, tokenStatus: 'completed',
       bookedVia: 'walk_in', complaint: 'Chronic sinusitis', diagnosis: 'Allergic rhinitis with sinusitis',
       notes: 'Advised steam inhalation.', rx: RX_ITEMS_ENT, pharmacyStatus: 'pending',
-      payment: { method: 'card_offline', status: 'completed' },
+      payment: {
+        method: 'card_offline', status: 'completed', recordedBy: receptionistId,
+        transactionRef: 'Card ending 4582 / Slip #8912',
+        notes: 'Video endoscopy completed',
+        services: [{ service_name: 'Video Endoscopy (ENT)', price: 1200 }, { service_name: 'Pure Tone Audiometry (Hearing Test)', price: 700 }],
+      },
     },
     nair && {
       doctor: nair, phone: '9100000002', time: '10:20', apptStatus: 'in_consultation', token: 2, tokenStatus: 'in_consultation',
@@ -488,7 +589,8 @@ export async function seedDemoData(pool) {
     if (s.payment) {
       await insertPayment(pool, {
         appointmentId: apptId, amount: s.doctor.consultation_fee,
-        method: s.payment.method, status: s.payment.status, recordedBy: adminId,
+        method: s.payment.method, status: s.payment.status, recordedBy: s.payment.recordedBy || adminId,
+        transactionRef: s.payment.transactionRef, notes: s.payment.notes, services: s.payment.services || [],
       });
     }
   }
@@ -517,35 +619,39 @@ export async function seedDemoData(pool) {
   const doctorList = [sharma, nair, kapoor, sen, roy].filter(Boolean);
   const caseBank = {
     [sharma?.id]: [
-      { complaint: 'Chest tightness on exertion', diagnosis: 'Stable angina — on medical management', rx: RX_ITEMS_CARDIO },
-      { complaint: 'Palpitations', diagnosis: 'Benign PVCs — reassured', rx: RX_ITEMS_CARDIO.slice(0, 2) },
-      { complaint: 'Hypertension follow-up', diagnosis: 'Essential hypertension — controlled', rx: RX_ITEMS_CARDIO.slice(0, 1) },
-      { complaint: 'Breathlessness on exertion', diagnosis: 'Mild LV dysfunction — stable', rx: RX_ITEMS_CARDIO },
+      { complaint: 'Chest tightness on exertion', diagnosis: 'Stable angina — on medical management', rx: RX_ITEMS_CARDIO, spec: 'cardiology' },
+      { complaint: 'Palpitations', diagnosis: 'Benign PVCs — reassured', rx: RX_ITEMS_CARDIO.slice(0, 2), spec: 'cardiology' },
+      { complaint: 'Hypertension follow-up', diagnosis: 'Essential hypertension — controlled', rx: RX_ITEMS_CARDIO.slice(0, 1), spec: 'cardiology' },
+      { complaint: 'Breathlessness on exertion', diagnosis: 'Mild LV dysfunction — stable', rx: RX_ITEMS_CARDIO, spec: 'cardiology' },
     ],
     [nair?.id]: [
-      { complaint: 'Chronic sinusitis', diagnosis: 'Allergic rhinitis with sinusitis', rx: RX_ITEMS_ENT },
-      { complaint: 'Ear pain', diagnosis: 'Otitis media — resolving', rx: RX_ITEMS_ENT },
-      { complaint: 'Nasal blockage', diagnosis: 'Deviated septum — conservative', rx: RX_ITEMS_ENT.slice(0, 1) },
+      { complaint: 'Chronic sinusitis', diagnosis: 'Allergic rhinitis with sinusitis', rx: RX_ITEMS_ENT, spec: 'ent' },
+      { complaint: 'Ear pain', diagnosis: 'Otitis media — resolving', rx: RX_ITEMS_ENT, spec: 'ent' },
+      { complaint: 'Nasal blockage', diagnosis: 'Deviated septum — conservative', rx: RX_ITEMS_ENT.slice(0, 1), spec: 'ent' },
     ],
     [kapoor?.id]: [
-      { complaint: 'Knee pain', diagnosis: 'OA knee bilateral', rx: RX_ITEMS_ORTHO },
-      { complaint: 'Lower back pain', diagnosis: 'Lumbar spondylosis', rx: RX_ITEMS_ORTHO },
-      { complaint: 'Shoulder stiffness', diagnosis: 'Frozen shoulder — improving', rx: RX_ITEMS_ORTHO.slice(0, 1) },
+      { complaint: 'Knee pain', diagnosis: 'OA knee bilateral', rx: RX_ITEMS_ORTHO, spec: 'ortho' },
+      { complaint: 'Lower back pain', diagnosis: 'Lumbar spondylosis', rx: RX_ITEMS_ORTHO, spec: 'ortho' },
+      { complaint: 'Shoulder stiffness', diagnosis: 'Frozen shoulder — improving', rx: RX_ITEMS_ORTHO.slice(0, 1), spec: 'ortho' },
     ],
     [sen?.id]: [
-      { complaint: 'Migraine', diagnosis: 'Migraine without aura', rx: RX_ITEMS_NEURO },
-      { complaint: 'Recurrent headache', diagnosis: 'Tension-type headache', rx: RX_ITEMS_NEURO },
+      { complaint: 'Migraine', diagnosis: 'Migraine without aura', rx: RX_ITEMS_NEURO, spec: 'neuro' },
+      { complaint: 'Recurrent headache', diagnosis: 'Tension-type headache', rx: RX_ITEMS_NEURO, spec: 'neuro' },
     ],
     [roy?.id]: [
-      { complaint: 'Antenatal visit', diagnosis: 'Routine antenatal check-up', rx: RX_ITEMS_GYNAE },
-      { complaint: 'Irregular periods', diagnosis: 'PCOS — on management', rx: RX_ITEMS_GYNAE.slice(0, 1) },
+      { complaint: 'Antenatal visit', diagnosis: 'Routine antenatal check-up', rx: RX_ITEMS_GYNAE, spec: 'gynae' },
+      { complaint: 'Irregular periods', diagnosis: 'PCOS — on management', rx: RX_ITEMS_GYNAE.slice(0, 1), spec: 'gynae' },
     ],
   };
+
   const pastTimes = ['08:00', '08:15', '08:30', '08:45', '08:59'];
   const futureTimes = ['15:00', '15:15', '15:30', '15:45', '16:00'];
-  const paymentMethods = ['cash', 'upi_offline', 'card_offline'];
+  const paymentMethods = ['cash', 'upi_offline', 'card_offline', 'net_banking', 'insurance'];
+  const upiRefs = ['423981029384', '439281029112', 'UPI-HDFC-89123', '412093849102', 'UPI-SBI-77239', '440192837482'];
+  const cardRefs = ['Card ending 4582 / Slip #8912', 'Card ending 9012 / Auth #4412', 'Card ending 1120 / Slip #3301', 'Card ending 8841 / Auth #9812'];
 
-  let rollingCount = { past: 0, future: 0 };
+  let rollingCount = { past: 0, future: 0, servicesCount: 0 };
+
   for (let dayOffset = 1; dayOffset <= 15; dayOffset++) {
     const pastDate = daysAgo(dayOffset);
     const futureDate = daysAhead(dayOffset);
@@ -555,7 +661,7 @@ export async function seedDemoData(pool) {
       const cases = caseBank[doctor.id];
       const phone = DEMO_PATIENTS[(dayOffset + di) % DEMO_PATIENTS.length].phone;
 
-      // Past: completed visit with consultation, prescription, payment
+      // Past: completed visit with consultation, prescription, services & payment
       const kase = cases[(dayOffset + di) % cases.length];
       const pastApptId = await insertAppointment(pool, {
         patientId: p(phone), doctorId: doctor.id, date: pastDate, time: pastTimes[di],
@@ -573,10 +679,34 @@ export async function seedDemoData(pool) {
         consultationId: pastConsultId, doctorId: doctor.id, patientId: p(phone),
         advice: 'Follow up as needed.', pharmacyStatus: 'dispensed', items: kase.rx, pharmacistId,
       });
+
+      // Attach realistic diagnostic services to visits
+      const servicePool = CLINICAL_SERVICES_BANK[kase.spec] || CLINICAL_SERVICES_BANK.cardiology;
+      const attachedServices = (dayOffset + di) % 4 !== 0 ? servicePool[(dayOffset + di) % servicePool.length] : [];
+
+      const method = paymentMethods[(dayOffset + di) % paymentMethods.length];
+      const cashierId = (dayOffset + di) % 2 === 0 ? receptionistId : adminId;
+
+      let txnRef = null;
+      if (method === 'upi_offline') txnRef = upiRefs[(dayOffset + di) % upiRefs.length];
+      else if (method === 'card_offline') txnRef = cardRefs[(dayOffset + di) % cardRefs.length];
+      else if (method === 'insurance') txnRef = `TPA-CLAIM-${890000 + dayOffset * 10 + di}`;
+      else if (method === 'net_banking') txnRef = `IMPS-${900000 + dayOffset * 100 + di}`;
+      else txnRef = 'Cash collected at reception counter';
+
       await insertPayment(pool, {
-        appointmentId: pastApptId, amount: doctor.consultation_fee,
-        method: paymentMethods[(dayOffset + di) % paymentMethods.length], status: 'completed', recordedBy: adminId,
+        appointmentId: pastApptId,
+        amount: doctor.consultation_fee,
+        method,
+        status: 'completed',
+        recordedBy: cashierId,
+        transactionRef: txnRef,
+        notes: attachedServices.length ? `Included ${attachedServices.map(s => s.service_name).join(', ')}` : 'Standard consultation fee',
+        paidAt: new Date(pastDate),
+        services: attachedServices,
       });
+
+      if (attachedServices.length) rollingCount.servicesCount += attachedServices.length;
       await setTokenCounter(pool, doctor.id, pastDate, 1);
       rollingCount.past++;
 
@@ -597,8 +727,12 @@ export async function seedDemoData(pool) {
     status: 'completed', bookedVia: 'walk_in',
   });
   await insertPayment(pool, {
-    appointmentId: pendingPayAppt, amount: sharma.consultation_fee,
-    method: 'cash', status: 'pending', recordedBy: null,
+    appointmentId: pendingPayAppt,
+    amount: sharma.consultation_fee,
+    method: 'cash',
+    status: 'pending',
+    recordedBy: null,
+    services: [{ service_name: 'Blood Sugar Test (Random / Fasting)', price: 100 }],
   });
 
   // ── Audit log samples ──
@@ -620,9 +754,8 @@ export async function seedDemoData(pool) {
 
   console.log('Demo data seeded:');
   console.log(`  • ${DEMO_PATIENTS.length} patients (phones 9100000001–9100000015)`);
-  console.log(`  • Today: every active appointment is also in the OPD queue (cancelled/no-show excluded)`);
-  console.log(`  • Dr Sharma tokens #1–#8; ENT / Ortho / Gynae / Neuro also have live queues`);
-  console.log(`  • Pharmacy: 2 pending Rx (Priya + ENT patient), 1 dispensed`);
-  console.log(`  • Future bookings, payments (cash/UPI/card), medicine templates`);
-  console.log(`  • ${rollingCount.past} completed visits over the last 15 days, ${rollingCount.future} upcoming bookings over the next 15 days`);
+  console.log(`  • Today: every active appointment is also in the OPD queue`);
+  console.log(`  • Attached clinical diagnostic tests & services to appointments (${rollingCount.servicesCount} services attached)`);
+  console.log(`  • Payments seeded across Cash, UPI (with UTRs), Cards (with Auth codes), Net Banking, and Insurance`);
+  console.log(`  • ${rollingCount.past} completed visits over the last 15 days, ${rollingCount.future} upcoming bookings`);
 }

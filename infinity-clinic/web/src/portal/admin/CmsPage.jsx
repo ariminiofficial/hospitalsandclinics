@@ -291,7 +291,7 @@ function JsonSectionEditor({ section, data, onChange }) {
 }
 
 export default function CmsPage() {
-  const [tab, setTab] = useState('pages');
+  const [tab, setTab] = useState('services');
   const [content, setContent] = useState({});
   const [services, setServices] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
@@ -396,8 +396,14 @@ export default function CmsPage() {
       {message && <div className="alert-success">{message}</div>}
 
       <div className="tabs">
-        {['pages', 'site', 'lists', 'services', 'testimonials'].map((t) => (
-          <button key={t} type="button" className={`tab ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)}>{t}</button>
+        {[
+          { id: 'services', label: 'Services & Pricing' },
+          { id: 'pages', label: 'Page Content' },
+          { id: 'site', label: 'Site Sections' },
+          { id: 'lists', label: 'FAQ & Lists' },
+          { id: 'testimonials', label: 'Testimonials' },
+        ].map(({ id, label }) => (
+          <button key={id} type="button" className={`tab ${tab === id ? 'active' : ''}`} onClick={() => setTab(id)}>{label}</button>
         ))}
       </div>
 
@@ -545,7 +551,7 @@ export default function CmsPage() {
                 {testimonials.map((t) => (
                   <tr key={t.id}>
                     <td>{t.patient_name}</td>
-                    <td>{'★'.repeat(t.rating || 5)}</td>
+                    <td><span className="badge badge-secondary">{t.rating || 5} / 5</span></td>
                     <td className="text-body-sm">{t.content}</td>
                     <td className="actions-cell row-actions">
                       <button type="button" className="btn btn-sm btn-outline" onClick={() => setViewTestimonial(t)}>View</button>
@@ -559,10 +565,10 @@ export default function CmsPage() {
         </div>
       )}
 
-      <Modal open={!!editingService} onClose={() => setEditingService(null)} title="Edit Service & Price">
+      <Modal open={!!editingService} onClose={() => setEditingService(null)} title="Edit Service & Price" size="lg">
         {editingService && (
           <form className="form" onSubmit={updateService}>
-            <label>Title
+            <label>Service / Test Title
               <input
                 value={editingService.title || ''}
                 onChange={(e) => setEditingService({ ...editingService, title: e.target.value })}
@@ -580,7 +586,7 @@ export default function CmsPage() {
                   required
                 />
               </label>
-              <label>Category
+              <label>Department / Category
                 <select
                   value={editingService.category || 'General'}
                   onChange={(e) => setEditingService({ ...editingService, category: e.target.value })}
@@ -597,7 +603,7 @@ export default function CmsPage() {
               </label>
             </div>
             <div className="grid-2-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <label>Duration (mins)
+              <label>Duration (Minutes)
                 <input
                   type="number"
                   value={editingService.duration_minutes ?? editingService.durationMinutes ?? 15}
@@ -612,7 +618,7 @@ export default function CmsPage() {
                 />
               </label>
             </div>
-            <label>Description
+            <label>Clinical Description &amp; Prep Notes
               <textarea
                 value={editingService.description || ''}
                 onChange={(e) => setEditingService({ ...editingService, description: e.target.value })}
@@ -625,33 +631,33 @@ export default function CmsPage() {
                 onChange={(e) => setEditingService({ ...editingService, icon: e.target.value })}
               />
             </label>
-            <div style={{ display: 'flex', gap: 16, margin: '8px 0' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 20, margin: '10px 0' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, textTransform: 'none', fontStyle: 'normal' }}>
                 <input
                   type="checkbox"
                   checked={editingService.is_published !== false && editingService.isPublished !== false}
                   onChange={(e) => setEditingService({ ...editingService, is_published: e.target.checked, isPublished: e.target.checked })}
                 />
-                Published
+                Published on Public Website
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, textTransform: 'none', fontStyle: 'normal' }}>
                 <input
                   type="checkbox"
                   checked={editingService.is_active !== false && editingService.isActive !== false}
                   onChange={(e) => setEditingService({ ...editingService, is_active: e.target.checked, isActive: e.target.checked })}
                 />
-                Active for selection
+                Active for Doctor/Reception selection
               </label>
             </div>
             <div className="modal-footer-actions">
-              <button type="submit" className="btn btn-primary">Save Changes</button>
               <button type="button" className="btn btn-secondary" onClick={() => setEditingService(null)}>Cancel</button>
+              <button type="submit" className="btn btn-primary">Save Changes</button>
             </div>
           </form>
         )}
       </Modal>
 
-      <Modal open={!!viewService} onClose={() => setViewService(null)} title="Service Details">
+      <Modal open={!!viewService} onClose={() => setViewService(null)} title="Service Details" size="md">
         {viewService && (
           <>
             <DetailDl items={[
@@ -671,12 +677,12 @@ export default function CmsPage() {
         )}
       </Modal>
 
-      <Modal open={!!viewTestimonial} onClose={() => setViewTestimonial(null)} title="Testimonial Details">
+      <Modal open={!!viewTestimonial} onClose={() => setViewTestimonial(null)} title="Testimonial Details" size="md">
         {viewTestimonial && (
           <>
             <DetailDl items={[
               { label: 'Patient', value: viewTestimonial.patient_name },
-              { label: 'Rating', value: '★'.repeat(viewTestimonial.rating || 5) },
+              { label: 'Rating', value: `${viewTestimonial.rating || 5} / 5` },
               { label: 'Content', value: viewTestimonial.content },
             ]} />
             <div className="modal-footer-actions">
