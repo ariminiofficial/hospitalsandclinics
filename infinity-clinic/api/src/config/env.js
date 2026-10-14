@@ -14,7 +14,7 @@ export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: Number(process.env.PORT || 4000),
   databaseUrl: getEnv('DATABASE_URL'),
-  redisUrl: getEnv('REDIS_URL'),
+  redisUrl: process.env.REDIS_URL || '',
   jwtAccessSecret: getEnv('JWT_ACCESS_SECRET'),
   jwtRefreshSecret: getEnv('JWT_REFRESH_SECRET'),
   jwtAccessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
