@@ -82,8 +82,8 @@ async function seed() {
 
   const adminHash = await bcrypt.hash(getInitialCred('admin'), 10);
   await pool.query(
-    `INSERT INTO users (email, password_hash, role, full_name)
-     VALUES ($1, $2, 'admin', 'Administrator')
+    `INSERT INTO users (email, password_hash, role)
+     VALUES ($1, $2, 'admin')
      ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash`,
     [ADMIN_EMAIL, adminHash]
   );
@@ -91,24 +91,25 @@ async function seed() {
   for (const doc of DOCTORS) {
     const docHash = await bcrypt.hash(doc.rawAuth, 10);
     const { rows: userRows } = await pool.query(
-      `INSERT INTO users (email, password_hash, role, full_name)
-       VALUES ($1, $2, 'doctor', $3)
+      `INSERT INTO users (email, password_hash, role)
+       VALUES ($1, $2, 'doctor')
        ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash
        RETURNING id`,
-      [doc.email, docHash, doc.full_name]
+      [doc.email, docHash]
     );
     const userId = userRows[0].id;
 
     const { rows: docRows } = await pool.query(
-      `INSERT INTO doctors (user_id, specialization, qualification, bio, consultation_fee)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO doctors (user_id, full_name, specialization, qualification, bio, consultation_fee)
+       VALUES ($1, $2, $3, $4, $5, $6)
        ON CONFLICT (user_id) DO UPDATE SET
+         full_name = EXCLUDED.full_name,
          specialization = EXCLUDED.specialization,
          qualification = EXCLUDED.qualification,
          bio = EXCLUDED.bio,
          consultation_fee = EXCLUDED.consultation_fee
        RETURNING id`,
-      [userId, doc.specialization, doc.qualification, doc.bio, doc.consultation_fee]
+      [userId, doc.full_name, doc.specialization, doc.qualification, doc.bio, doc.consultation_fee]
     );
     const doctorId = docRows[0].id;
 
@@ -127,30 +128,46 @@ async function seed() {
   }
 
   const recHash = await bcrypt.hash(getInitialCred('receptionist'), 10);
-  await pool.query(
-    `INSERT INTO users (email, password_hash, role, full_name)
-     VALUES ($1, $2, 'receptionist', 'Front Desk')
-     ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash`,
+  const { rows: recRows } = await pool.query(
+    `INSERT INTO users (email, password_hash, role)
+     VALUES ($1, $2, 'receptionist')
+     ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash
+     RETURNING id`,
     [RECEPTIONIST_EMAIL, recHash]
   );
+  if (recRows.length > 0) {
+    await pool.query(
+      `INSERT INTO receptionists (user_id, full_name)
+       VALUES ($1, 'Front Desk')
+       ON CONFLICT (user_id) DO UPDATE SET full_name = EXCLUDED.full_name`,
+      [recRows[0].id]
+    );
+  }
 
   const pharmHash = await bcrypt.hash(getInitialCred('pharmacist'), 10);
-  await pool.query(
-    `INSERT INTO users (email, password_hash, role, full_name)
-     VALUES ($1, $2, 'pharmacist', 'Clinic Pharmacy')
-     ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash`,
+  const { rows: pharmRows } = await pool.query(
+    `INSERT INTO users (email, password_hash, role)
+     VALUES ($1, $2, 'pharmacist')
+     ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash
+     RETURNING id`,
     [PHARMACIST_EMAIL, pharmHash]
   );
-
-  for (const s of allCmsSections) {
+  if (pharmRows.length > 0) {
     await pool.query(
-      `INSERT INTO cms_sections (section_key, title, subtitle, content, is_published)
-       VALUES ($1, $2, $3, $4, true)
+      `INSERT INTO pharmacists (user_id, full_name)
+       VALUES ($1, 'Clinic Pharmacy')
+       ON CONFLICT (user_id) DO UPDATE SET full_name = EXCLUDED.full_name`,
+      [pharmRows[0].id]
+    );
+  }
+
+  for (const s of allCmsSections()) {
+    await pool.query(
+      `INSERT INTO website_content (section_key, content, is_published)
+       VALUES ($1, $2, true)
        ON CONFLICT (section_key) DO UPDATE SET
-         title = EXCLUDED.title,
-         subtitle = EXCLUDED.subtitle,
          content = EXCLUDED.content`,
-      [s.section_key, s.title, s.subtitle, JSON.stringify(s.content)]
+      [s.key, JSON.stringify(s.content)]
     );
   }
 
@@ -170,16 +187,19 @@ async function seed() {
   ];
 
   for (const s of services) {
-    await pool.query(
-      `INSERT INTO clinical_services (name, category, description, duration_minutes, default_price, is_active)
-       VALUES ($1, $2, $3, $4, $5, true)
-       ON CONFLICT (name) DO UPDATE SET
-         category = EXCLUDED.category,
-         description = EXCLUDED.description,
-         duration_minutes = EXCLUDED.duration_minutes,
-         default_price = EXCLUDED.default_price`,
-      [s.name, s.category, s.description, s.duration_minutes, s.default_price]
-    );
+    const { rows } = await pool.query('SELECT id FROM services WHERE title = $1', [s.name]);
+    if (rows.length === 0) {
+      await pool.query(
+        `INSERT INTO services (title, category, description, duration_minutes, price, is_active, is_published)
+         VALUES ($1, $2, $3, $4, $5, true, true)`,
+        [s.name, s.category, s.description, s.duration_minutes, s.default_price]
+      );
+    } else {
+      await pool.query(
+        `UPDATE services SET category = $2, description = $3, duration_minutes = $4, price = $5, is_active = true, is_published = true WHERE id = $1`,
+        [rows[0].id, s.category, s.description, s.duration_minutes, s.default_price]
+      );
+    }
   }
 
   const testimonials = [

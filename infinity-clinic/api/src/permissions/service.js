@@ -26,8 +26,12 @@ function normalizeMatrix(raw) {
 }
 
 export async function getPermissionMatrix() {
-  const cached = await redis.get(CACHE_KEY);
-  if (cached) return JSON.parse(cached);
+  try {
+    const cached = await redis.get(CACHE_KEY);
+    if (cached) return JSON.parse(cached);
+  } catch {
+    // Redis optional cache
+  }
 
   const { rows } = await query(
     `SELECT value FROM clinic_settings WHERE key = $1`,
@@ -35,7 +39,11 @@ export async function getPermissionMatrix() {
   );
   const raw = rows[0]?.value;
   const matrix = normalizeMatrix(typeof raw === 'string' ? JSON.parse(raw) : raw);
-  await redis.setex(CACHE_KEY, CACHE_TTL, JSON.stringify(matrix));
+  try {
+    await redis.setex(CACHE_KEY, CACHE_TTL, JSON.stringify(matrix));
+  } catch {
+    // Redis optional cache
+  }
   return matrix;
 }
 
@@ -46,7 +54,11 @@ export async function savePermissionMatrix(matrix) {
      ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()`,
     [SETTINGS_KEY, JSON.stringify(normalized)]
   );
-  await redis.del(CACHE_KEY);
+  try {
+    await redis.del(CACHE_KEY);
+  } catch {
+    // Redis optional cache invalidation
+  }
   return normalized;
 }
 

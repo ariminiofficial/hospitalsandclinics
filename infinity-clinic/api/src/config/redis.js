@@ -2,14 +2,19 @@ import Redis from 'ioredis';
 import { env } from './env.js';
 
 export const redis = new Redis(env.redisUrl, {
-  maxRetriesPerRequest: 3,
+  maxRetriesPerRequest: 1,
   lazyConnect: true,
+  enableOfflineQueue: false,
 });
 
 export const redisSub = new Redis(env.redisUrl, {
-  maxRetriesPerRequest: 3,
+  maxRetriesPerRequest: 1,
   lazyConnect: true,
+  enableOfflineQueue: false,
 });
+
+redis.on('error', () => {});
+redisSub.on('error', () => {});
 
 export async function connectRedis() {
   const connectIfNeeded = async (client) => {
