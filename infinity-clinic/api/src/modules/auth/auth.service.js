@@ -83,7 +83,11 @@ export async function login(email, password) {
   const tokenId = uuidv4();
   const refreshToken = signRefreshToken(user.id, tokenId);
 
-  await redis.setex(`${REFRESH_TOKEN_PREFIX}${tokenId}`, REFRESH_TTL_SECONDS, user.id);
+  try {
+    await redis.setex(`${REFRESH_TOKEN_PREFIX}${tokenId}`, REFRESH_TTL_SECONDS, user.id);
+  } catch {
+    // Redis optional cache
+  }
 
   return {
     accessToken,
@@ -106,8 +110,13 @@ export async function refresh(refreshToken) {
     throw new AppError('Invalid refresh token', 401, 'INVALID_REFRESH');
   }
 
-  const stored = await redis.get(`${REFRESH_TOKEN_PREFIX}${payload.jti}`);
-  if (!stored || stored !== payload.sub) {
+  let stored = null;
+  try {
+    stored = await redis.get(`${REFRESH_TOKEN_PREFIX}${payload.jti}`);
+  } catch {
+    // Redis offline
+  }
+  if (stored !== null && stored !== payload.sub) {
     throw new AppError('Refresh token revoked', 401, 'INVALID_REFRESH');
   }
 

@@ -12,8 +12,12 @@ router.use(authenticate);
 router.use(authorize('admin'));
 
 async function invalidateCmsCache() {
-  const keys = await redis.keys(`${CMS_CACHE_PREFIX}*`);
-  if (keys.length > 0) await redis.del(...keys);
+  try {
+    const keys = await redis.keys(`${CMS_CACHE_PREFIX}*`);
+    if (keys.length > 0) await redis.del(...keys);
+  } catch {
+    // Redis optional cache
+  }
 }
 
 // Website content sections

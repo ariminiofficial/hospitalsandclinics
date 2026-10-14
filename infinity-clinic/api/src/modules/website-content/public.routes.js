@@ -8,16 +8,24 @@ const CMS_CACHE_TTL = 300;
 router.get('/content', async (req, res, next) => {
   try {
     const cacheKey = `${CMS_CACHE_PREFIX}all`;
-    const cached = await redis.get(cacheKey);
-    if (cached) {
-      return res.json(JSON.parse(cached));
+    try {
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        return res.json(JSON.parse(cached));
+      }
+    } catch {
+      // Redis optional cache
     }
 
     const { rows } = await query(
       `SELECT section_key, content FROM website_content WHERE is_published = true`
     );
     const content = Object.fromEntries(rows.map((r) => [r.section_key, r.content]));
-    await redis.setex(cacheKey, CMS_CACHE_TTL, JSON.stringify(content));
+    try {
+      await redis.setex(cacheKey, CMS_CACHE_TTL, JSON.stringify(content));
+    } catch {
+      // Redis optional cache
+    }
     res.json(content);
   } catch (err) {
     next(err);
